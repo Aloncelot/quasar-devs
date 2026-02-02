@@ -1,65 +1,64 @@
-import Image from "next/image";
+'use client'; // <-- IMPORTANTE: Framer Motion necesita 'use client'
+
+import { ParticlesScene } from '@/components/ParticlesScene';
+// 1. Importamos motion
+import { motion, Variants } from 'framer-motion';
+import { Services } from '@/components/Services';
+import { Projects } from '@/components/Projects';
 
 export default function Home() {
+
+  // Definimos las variantes de la animación (el "antes" y el "después")
+  const containerVariants: Variants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.3, // Retraso entre la aparición de cada hijo
+        delayChildren: 0.5 // Espera un poco a que cargue el 3D antes de empezar
+      }
+    }
+  };
+
+  const itemVariants: Variants = {
+    hidden: { y: 50, opacity: 0 }, // Empieza 50px abajo y transparente
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: { type: "spring", stiffness: 100, damping: 10 } // Efecto rebote suave
+    }
+  };
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+    <main className="relative w-full text-white">
+      <ParticlesScene />
+      <div className="relative w-full h-screen overflow-hidden flex items-center justify-center">
+
+        <motion.div
+          className="z-10 text-center text-white pointer-events-none select-none px-4"
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+        >
+          <motion.h1
+            className="font-gibed text-6xl md:text-9xl font-bold tracking-wider bg-clip-text text-transparent bg-gradient-to-b from-white via-cyan-100 to-cyan-500 drop-shadow-[0_0_15px_rgba(0,243,255,0.5)]"
+            variants={itemVariants}
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+            QUASAR DEVS
+          </motion.h1>
+
+          <motion.p
+            className="mt-6 text-lg md:text-2xl text-cyan-200/80 uppercase tracking-[0.3em] font-light"
+            variants={itemVariants}
           >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+            Architecting the Digital Future
+          </motion.p>
+        </motion.div>
+      </div>
+
+      <Services />
+      <Projects />
+
+    </main>
   );
 }
