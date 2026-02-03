@@ -11,3 +11,117 @@ body {
   color: var(--foreground);
   background: var(--background);
 }
+
+/* Animación de vibración y distorsión */
+@keyframes glitch-shake {
+  0% {
+    transform: translate(0);
+  }
+
+  20% {
+    transform: translate(-2px, 2px);
+  }
+
+  40% {
+    transform: translate(-2px, -2px);
+  }
+
+  60% {
+    transform: translate(2px, 2px);
+  }
+
+  80% {
+    transform: translate(2px, -2px);
+  }
+
+  100% {
+    transform: translate(0);
+  }
+}
+
+/* Animación de parpadeo de color */
+@keyframes glitch-flash {
+  0% {
+    background-color: rgba(20, 184, 166, 0.1);
+    border-color: #14b8a6;
+    color: #2dd4bf;
+  }
+
+  50% {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-color: #ffffff;
+    color: #ffffff;
+  }
+
+  100% {
+    background-color: rgba(20, 184, 166, 0.1);
+    border-color: #14b8a6;
+    color: #2dd4bf;
+  }
+}
+
+/* CLASE MAESTRA: Aplícala al botón */
+.terminal-button:hover {
+  /* Ejecuta ambas animaciones al mismo tiempo */
+  animation: glitch-shake 0.2s cubic-bezier(.36, .07, .19, .97) both infinite,
+    glitch-flash 0.1s steps(2) infinite;
+
+  /* Efecto de sombra de texto tipo 3D rojo/azul */
+  text-shadow: 2px 0 rgba(255, 0, 0, 0.7), -2px 0 rgba(0, 255, 255, 0.7);
+}
+
+@keyframes ignition {
+  0% {
+    opacity: 0.5;
+    border-color: rgba(20, 184, 166, 0.2);
+    box-shadow: none;
+    color: #6b7280;
+  }
+
+  /* Apagado */
+  10% {
+    opacity: 1;
+    border-color: rgba(20, 184, 166, 0.8);
+    box-shadow: 0 0 10px rgba(20, 184, 166, 0.5);
+    color: #2dd4bf;
+  }
+
+  /* Flash */
+  20% {
+    opacity: 0.5;
+    border-color: rgba(20, 184, 166, 0.2);
+    box-shadow: none;
+    color: #6b7280;
+  }
+
+  /* Apagado */
+  30% {
+    opacity: 1;
+    border-color: rgba(20, 184, 166, 0.8);
+    box-shadow: 0 0 10px rgba(20, 184, 166, 0.5);
+    color: #2dd4bf;
+  }
+
+  /* Flash */
+  40% {
+    opacity: 0.6;
+    border-color: rgba(20, 184, 166, 0.2);
+    box-shadow: none;
+  }
+
+  /* Casi Apagado */
+  100% {
+    opacity: 1;
+    border-color: rgba(20, 184, 166, 1);
+    box-shadow: 0 0 15px rgba(20, 184, 166, 0.4);
+    background-color: rgba(20, 184, 166, 0.1);
+    color: #2dd4bf;
+  }
+
+  /* Encendido Estable */
+}
+
+/* Clase para aplicar la animación */
+.hover-ignition:hover {
+  animation: ignition 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}

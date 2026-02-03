@@ -5,6 +5,10 @@ import { ParticlesScene } from '@/components/ParticlesScene';
 import { motion, Variants } from 'framer-motion';
 import { Services } from '@/components/Services';
 import { Projects } from '@/components/Projects';
+import { About } from '@/components/About';
+import { Contact } from '@/components/Contact';
+import { Footer } from '@/components/Footer';
+import { FloatingLink } from '@/components/FloatingLink';
 
 export default function Home() {
 
@@ -58,6 +62,10 @@ export default function Home() {
 
       <Services />
       <Projects />
+      <About />
+      <Contact />
+      <Footer />
+      <FloatingLink />
 
     </main>
   );
