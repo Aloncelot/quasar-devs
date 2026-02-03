@@ -77,10 +77,10 @@ export const Navbar = () => {
                                     initial={{ opacity: 0, x: -20 }}
                                     animate={{ opacity: 1, x: 0 }}
                                     transition={{ delay: i * 0.1 }}
-                                    onClick={() => setIsOpen(false)} // Cierra el menú al hacer clic
+                                    onClick={() => setIsOpen(false)}
                                     className="text-lg font-mono text-gray-300 hover:text-teal-400 tracking-widest w-full text-center py-2 border-l-2 border-transparent hover:border-teal-500 hover:bg-teal-500/10 transition-all"
                                 >
-                            // {link.name}
+                                    {link.name}
                                 </motion.a>
                             ))}
                         </div>
