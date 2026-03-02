@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 });
 
 const gibed = localFont({
-  src: "./fonts/Gibed.otf",
+  src: "/fonts/Gibed.otf",
   variable: "--font-gibed",
   display: "swap",
 });
