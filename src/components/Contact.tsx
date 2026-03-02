@@ -105,7 +105,8 @@ export const Contact = () => {
             .then((result) => {
                 setFormStatus('sent');
                 if (form.current) form.current.reset();
-                setTimeout(() => setFormStatus('idle'), 5000);
+                // Regresa al estado inicial después de 6 segundos
+                setTimeout(() => setFormStatus('idle'), 6000);
             }, (error) => {
                 console.error("Error sending email:", error.text);
                 setFormStatus('error');
@@ -227,11 +228,39 @@ export const Contact = () => {
                                 {formStatus === 'error' && <span className="text-red-500 font-mono">{t('contact.btn_err')}</span>}
                             </span>
                         </button>
+
+                        <AnimatePresence>
+                            {formStatus === 'sent' && (
+                                <motion.div 
+                                    initial={{ opacity: 0, scale: 0.9, y: 10 }} 
+                                    animate={{ 
+                                        opacity: 1, 
+                                        scale: 1, 
+                                        y: 0,
+                                        textShadow: [
+                                            "0 0 0px #22d3ee",
+                                            "0 0 15px #22d3ee",
+                                            "0 0 0px #22d3ee"
+                                        ] 
+                                    }} 
+                                    exit={{ opacity: 0, scale: 0.9 }}
+                                    className="mt-6 p-4 border-2 border-cyan-500 bg-cyan-950/20 text-cyan-400 font-mono text-sm text-center rounded-lg backdrop-blur-md relative overflow-hidden"
+                                >
+                                    <div className="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(0,255,255,0.06),rgba(0,255,255,0.02),rgba(0,255,255,0.06))] bg-[length:100%_2px,2px_100%] pointer-events-none opacity-30" />
+                                    
+                                    <div className="relative z-10 flex flex-col items-center gap-2">
+                                        <span className="text-xs opacity-50 tracking-[0.3em]">SYSTEM NOTIFICATION</span>
+                                        <span className="font-bold tracking-[0.2em] text-lg uppercase">
+                                            {t('contact.btn_sent')}
+                                        </span>
+                                        <div className="w-full h-[1px] bg-cyan-500/30 mt-2" />
+                                        <span className="text-[10px] opacity-70 uppercase tracking-widest">Data packet received by central command</span>
+                                    </div>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
                     </form>
                 </motion.div>
-
-                
-
             </div>
         </section>
     );
