@@ -26,7 +26,7 @@ export const es = {
     },
 
     projects: {
-        title: "ARCHIVO GALÁCTICO",
+        title: "ARCHIVO",
         subtitle: "EXPLORA EL SISTEMA",
         btn_access: "Acceder al Sistema",
         p1_title: "COST ESTIMATOR",

@@ -24,7 +24,7 @@ export const en = {
         s4_desc: "Scalable infrastructure and intelligent data management. We deploy your project to the cloud with security and efficiency."
     },
     projects: {
-        title: "GALACTIC ARCHIVE",
+        title: "ARCHIVE",
         subtitle: "EXPLORE THE SYSTEM",
         btn_access: "Access System",
         p1_title: "COST ESTIMATOR",
