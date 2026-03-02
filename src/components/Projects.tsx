@@ -7,47 +7,9 @@ import { EffectComposer, Bloom, DepthOfField } from '@react-three/postprocessing
 import { easing } from 'maath';
 import * as THREE from 'three';
 import { FaExternalLinkAlt, FaDatabase, FaCode, FaCube, FaDumbbell } from 'react-icons/fa';
+import { useLanguage } from '@/context/LanguageContext';
 
 const RADIUS = 3;
-
-const projects = [
-    {
-        id: 1,
-        title: "COST ESTIMATOR",
-        tech: "NEXT.JS + .NET",
-        description: "Sistema de cálculo de costos de construcción con base de datos en tiempo real.",
-        color: "#cc5530",
-        url: "#",
-        icon: <FaDatabase />
-    },
-    {
-        id: 2,
-        title: "NUTRITION PRO",
-        tech: "REACT + FIREBASE",
-        description: "Plataforma para nutriólogos con seguimiento de pacientes y dietas.",
-        color: "#00c3d9",
-        url: "#",
-        icon: <FaCode />
-    },
-    {
-        id: 3,
-        title: "QUASAR DEVS",
-        tech: "THREE.JS + R3F",
-        description: "Portafolio inmersivo con efectos de partículas y shaders personalizados.",
-        color: "#8b5cf6",
-        url: "#",
-        icon: <FaCube />
-    },
-    {
-        id: 4,
-        title: "COACH DIEGO",
-        tech: "PYTHON + PYTORCH",
-        description: "Asistente de entrenamiento personal impulsado por IA.",
-        color: "#97220d",
-        url: "#",
-        icon: <FaDumbbell />
-    }
-];
 
 const ProjectMonolith = ({ data, index, total, onFocus, ...props }: any) => {
     const mesh = useRef<THREE.Mesh>(null);
@@ -94,7 +56,7 @@ const ProjectMonolith = ({ data, index, total, onFocus, ...props }: any) => {
     );
 };
 
-const MobileProjectCard = ({ project }: { project: any }) => (
+const MobileProjectCard = ({ project, t }: { project: any, t: any }) => (
     <div className="relative group w-full mb-8">
         <div className="absolute inset-0 bg-gray-900/80 border border-gray-700 rounded-lg transform transition-transform duration-300 group-hover:scale-[1.02]" />
         <div
@@ -119,7 +81,7 @@ const MobileProjectCard = ({ project }: { project: any }) => (
                 target="_blank"
                 className="mt-2 flex items-center justify-center gap-2 w-full py-3 bg-white/5 border border-white/10 text-white font-mono text-xs hover:bg-white/10 hover:border-white/30 transition-all uppercase tracking-widest"
             >
-                Acceder al Sistema <FaExternalLinkAlt />
+                {t('projects.btn_access')} <FaExternalLinkAlt />
             </a>
         </div>
         <div className="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[length:100%_4px,3px_100%] pointer-events-none opacity-20 rounded-lg" />
@@ -128,27 +90,65 @@ const MobileProjectCard = ({ project }: { project: any }) => (
 
 export const Projects = () => {
     const [focusTarget, setFocusTarget] = useState(new THREE.Vector3(0, 0, 0));
+    const { t } = useLanguage();
+
+    const projectsData = [
+        {
+            id: 1,
+            title: t('projects.p1_title'),
+            tech: "NEXT.JS + .NET",
+            description: t('projects.p1_desc'),
+            color: "#cc5530",
+            url: "#",
+            icon: <FaDatabase />
+        },
+        {
+            id: 2,
+            title: t('projects.p2_title'),
+            tech: "REACT + FIREBASE",
+            description: t('projects.p2_desc'),
+            color: "#00c3d9",
+            url: "https://xn--jorge-valdez-nutricin-clnica-9uc9o.com/",
+            icon: <FaCode />
+        },
+        {
+            id: 3,
+            title: t('projects.p3_title'),
+            tech: "THREE.JS + R3F",
+            description: t('projects.p3_desc'),
+            color: "#8b5cf6",
+            url: "#",
+            icon: <FaCube />
+        },
+        {
+            id: 4,
+            title: t('projects.p4_title'),
+            tech: "PYTHON + PYTORCH",
+            description: t('projects.p4_desc'),
+            color: "#97220d",
+            url: "#",
+            icon: <FaDumbbell />
+        }
+    ];
 
     return (
         <section id="proyectos" className="relative w-full min-h-screen bg-black">
 
             <div className="absolute top-10 left-0 w-full text-center z-10 pointer-events-none md:top-10">
                 <h2 className="font-gibed text-4xl md:text-6xl text-transparent bg-clip-text bg-gradient-to-b from-white to-gray-500 opacity-50">
-                    ARCHIVO GALÁCTICO
+                    {t('projects.title')}
                 </h2>
                 <p className="text-gray-400 text-xs tracking-[0.5em] mt-4">
-                    EXPLORA EL SISTEMA
+                    {t('projects.subtitle')}
                 </p>
             </div>
 
-            {/* VISTA MÓVIL */}
             <div className="md:hidden w-full px-6 pt-36 pb-12 flex flex-col relative z-20">
-                {projects.map((project) => (
-                    <MobileProjectCard key={project.id} project={project} />
+                {projectsData.map((project) => (
+                    <MobileProjectCard key={project.id} project={project} t={t} />
                 ))}
             </div>
 
-            {/* VISTA ESCRITORIO */}
             <div className="hidden md:block absolute inset-0 z-0">
                 <Canvas shadows dpr={[1, 1.5]} camera={{ position: [0, 4, 10], fov: 35 }}>
 
@@ -157,7 +157,6 @@ export const Projects = () => {
                     <hemisphereLight intensity={0.3} groundColor="black" />
                     <spotLight position={[10, 20, 10]} angle={0.5} penumbra={1} intensity={1} />
 
-                    {/* CONTROLES DESKTOP ACTUALIZADOS */}
                     <OrbitControls
                         enablePan={false}
                         enableZoom={false}
@@ -169,12 +168,12 @@ export const Projects = () => {
                     />
 
                     <group position={[0, -0.5, 0]}>
-                        {projects.map((project, i) => (
+                        {projectsData.map((project, i) => (
                             <ProjectMonolith
                                 key={project.id}
                                 data={project}
                                 index={i}
-                                total={projects.length}
+                                total={projectsData.length}
                                 onFocus={setFocusTarget}
                             />
                         ))}

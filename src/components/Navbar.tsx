@@ -4,11 +4,64 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaBars, FaTimes } from 'react-icons/fa';
 import Link from 'next/link';
+import { useLanguage } from '@/context/LanguageContext';
 
+const ScanlinesOverlay = () => (
+    <div className="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[length:100%_4px,3px_100%] pointer-events-none opacity-50 z-20" />
+);
+
+const LanguageToggle = () => {
+    const { lang, setLang } = useLanguage();
+
+    return (
+        <div className="flex items-center gap-2 bg-gray-900/50 border border-teal-900/50 p-1 rounded backdrop-blur-md">
+            <span className="text-[10px] font-mono text-teal-400 tracking-widest pl-2 hidden lg:block">
+                SYS.LANG:
+            </span>
+
+            <div className="flex relative">
+                <motion.div
+                    className="absolute top-0 bottom-0 w-10 bg-teal-500/20 border border-teal-500 rounded-sm shadow-[0_0_10px_rgba(20,184,166,0.3)] z-0"
+                    initial={false}
+                    animate={{ 
+                        x: lang === 'es' ? 0 : 40
+                    }}
+                    transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                />
+
+                <button 
+                    onClick={() => setLang('es')}
+                    className="relative w-10 h-6 flex items-center justify-center z-10 overflow-hidden rounded-sm group"
+                >
+                    <img 
+                        src="/flag-mx.webp" 
+                        alt="ES" 
+                        className={`w-full h-full object-cover transition-all duration-300 ${lang === 'es' ? 'opacity-100' : 'opacity-30 grayscale'}`}
+                    />
+                    {lang === 'es' && <ScanlinesOverlay />}
+                </button>
+
+                <button 
+                    onClick={() => setLang('en')}
+                    className="relative w-10 h-6 flex items-center justify-center z-10 overflow-hidden rounded-sm group"
+                >
+                    <img 
+                        src="/flag-en.png" 
+                        alt="EN" 
+                        className={`w-full h-full object-cover transition-all duration-300 ${lang === 'en' ? 'opacity-100' : 'opacity-30 grayscale'}`}
+                    />
+                    {lang === 'en' && <ScanlinesOverlay />}
+                </button>
+            </div>
+        </div>
+    );
+};
 
 export const Navbar = () => {
     const [isOpen, setIsOpen] = useState(false);
     const [scrolled, setScrolled] = useState(false);
+
+    const { t } = useLanguage();
 
     useEffect(() => {
         const handleScroll = () => {
@@ -19,11 +72,11 @@ export const Navbar = () => {
     }, []);
 
     const navLinks = [
-        { name: 'HOME', href: '#' },
-        { name: 'SERVICES', href: '#servicios' },
-        { name: 'PROJECTS', href: '#proyectos' },
-        { name: 'ABOUT', href: '#sobre-mi' },
-        { name: 'CONTACT', href: '#contacto' },
+        { name: t('nav.home'), href: '#' },
+        { name: t('nav.services'), href: '#servicios' },
+        { name: t('nav.projects'), href: '#proyectos' },
+        { name: t('nav.about'), href: '#sobre-mi' },
+        { name: t('nav.contact'), href: '#contacto' },
     ];
 
     return (
@@ -60,6 +113,15 @@ export const Navbar = () => {
                 {isOpen ? <FaTimes size={20} /> : <FaBars size={20} />}
             </button>
 
+            <div className="flex items-center gap-4">                
+                <LanguageToggle />
+                <button
+                    onClick={() => setIsOpen(!isOpen)}
+                    className="md:hidden text-teal-500 p-2 border border-teal-500/30 rounded bg-teal-500/10 active:scale-95 transition-transform"
+                >
+                    {isOpen ? <FaTimes size={20} /> : <FaBars size={20} />}
+                </button>
+            </div>
 
             <AnimatePresence>
                 {isOpen && (

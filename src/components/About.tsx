@@ -5,33 +5,8 @@ import { FaDatabase, FaServer, FaCode, FaIndustry, FaRulerCombined } from 'react
 import { SiDotnet, SiReact } from 'react-icons/si';
 import { VscAzure } from 'react-icons/vsc';
 
-const skills = [
-    {
-        category: "CORE SYSTEM & DATA",
-        icon: <FaDatabase className="text-purple-400" />,
-        items: [
-            { name: "C# / .NET Ecosystem", level: 95, color: "bg-purple-500", shadow: "shadow-purple-500/50" },
-            { name: "SQL & Heavy Data Architecture", level: 95, color: "bg-purple-600", shadow: "shadow-purple-600/50" },
-            { name: "Cloud Infra (Azure)", level: 85, color: "bg-blue-500", shadow: "shadow-blue-500/50" },
-        ]
-    },
-    {
-        category: "INTERFACE & UX",
-        icon: <FaCode className="text-cyan-400" />,
-        items: [
-            { name: "React / Next.js", level: 90, color: "bg-cyan-500", shadow: "shadow-cyan-500/50" },
-            { name: "Three.js / WebGL", level: 70, color: "bg-cyan-700", shadow: "shadow-cyan-700/50" },
-        ]
-    },
-    {
-        category: "DOMAIN EXPERTISE (REAL WORLD)",
-        icon: <FaIndustry className="text-amber-400" />,
-        items: [
-            { name: "Supply Chain Consulting", level: 100, color: "bg-amber-500", shadow: "shadow-amber-500/50" },
-            { name: "Construction Estimation", level: 100, color: "bg-amber-600", shadow: "shadow-amber-600/50" },
-        ]
-    }
-];
+// 1. IMPORTAMOS EL CEREBRO BILINGÜE
+import { useLanguage } from '@/context/LanguageContext';
 
 const TacticalSkillBar = ({ level, color, shadow }: { level: number, color: string, shadow: string }) => {
     const totalSegments = 20;
@@ -64,20 +39,49 @@ const TacticalSkillBar = ({ level, color, shadow }: { level: number, color: stri
 };
 
 export const About = () => {
+    // 2. EXTRAEMOS LA FUNCIÓN DE TRADUCCIÓN
+    const { t } = useLanguage();
+
+    // 3. MOVEMOS EL ARRAY ADENTRO Y LO RENOMBRAMOS
+    const skillsData = [
+        {
+            category: t('about.cat_core'),
+            icon: <FaDatabase className="text-purple-400" />,
+            items: [
+                { name: "C# / .NET Ecosystem", level: 95, color: "bg-purple-500", shadow: "shadow-purple-500/50" },
+                { name: "SQL & Heavy Data Architecture", level: 95, color: "bg-purple-600", shadow: "shadow-purple-600/50" },
+                { name: "Cloud Infra (Azure)", level: 85, color: "bg-blue-500", shadow: "shadow-blue-500/50" },
+            ]
+        },
+        {
+            category: t('about.cat_ui'),
+            icon: <FaCode className="text-cyan-400" />,
+            items: [
+                { name: "React / Next.js", level: 90, color: "bg-cyan-500", shadow: "shadow-cyan-500/50" },
+                { name: "Three.js / WebGL", level: 70, color: "bg-cyan-700", shadow: "shadow-cyan-700/50" },
+            ]
+        },
+        {
+            category: t('about.cat_domain'),
+            icon: <FaIndustry className="text-amber-400" />,
+            items: [
+                { name: t('about.domain_1'), level: 100, color: "bg-amber-500", shadow: "shadow-amber-500/50" },
+                { name: t('about.domain_2'), level: 100, color: "bg-amber-600", shadow: "shadow-amber-600/50" },
+            ]
+        }
+    ];
+
     return (
         <section id="sobre-mi" className="relative w-full min-h-screen bg-black py-24 px-6 md:px-12 flex items-center justify-center overflow-hidden">
             <div className="absolute inset-0 bg-[linear-gradient(rgba(20,20,20,0.5)_1px,transparent_1px),linear-gradient(90deg,rgba(20,20,20,0.5)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none" />
+            
+            {/* ... Elementos decorativos (círculos) ... */}
             <div className="absolute inset-0 flex items-center justify-center overflow-hidden pointer-events-none opacity-20">
-                <motion.div
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 120, repeat: Infinity, ease: "linear" }}
-                    className="w-[800px] h-[800px] border border-dashed border-teal-500/20 rounded-full flex items-center justify-center"
-                >
+                <motion.div animate={{ rotate: 360 }} transition={{ duration: 120, repeat: Infinity, ease: "linear" }} className="w-[800px] h-[800px] border border-dashed border-teal-500/20 rounded-full flex items-center justify-center">
                     <div className="w-[600px] h-[600px] border border-teal-500/10 rounded-full" />
                     <div className="w-[400px] h-[400px] border border-dashed border-teal-500/20 rounded-full" />
                 </motion.div>
             </div>
-
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,black_100%)] pointer-events-none" />
 
             <div className="max-w-6xl w-full grid grid-cols-1 lg:grid-cols-12 gap-12 relative z-10">
@@ -89,51 +93,35 @@ export const About = () => {
                         viewport={{ once: true }}
                         className="relative w-64 h-80 md:w-80 md:h-96 border-2 border-cyan-500/30 bg-gray-900/50 rounded-lg overflow-hidden group"
                     >
+                        {/* Esquinas y Foto */}
                         <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-cyan-400" />
                         <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-cyan-400" />
                         <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-cyan-400" />
                         <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-cyan-400" />
-
-                        <img
-                            src="AC2.jpeg"
-                            alt="Alonso Correa"
-                            className="w-full h-full object-cover opacity-90 transition-all duration-500 [filter:grayscale(100%)_brightness(70%)_sepia(100%)_hue-rotate(130deg)_saturate(400%)_contrast(250%)] group-hover:opacity-100"
-                        />
-
+                        <img src="AC2.jpeg" alt="Alonso Correa" className="w-full h-full object-cover opacity-90 transition-all duration-500 [filter:grayscale(100%)_brightness(70%)_sepia(100%)_hue-rotate(130deg)_saturate(400%)_contrast(250%)] group-hover:opacity-100" />
                         <div className="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] z-20 bg-[length:100%_4px,3px_100%] pointer-events-none" />
-                        <motion.div
-                            animate={{ top: ['-10%', '110%'] }}
-                            transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
-                            className="absolute left-0 w-full h-[2px] bg-teal-400 shadow-[0_0_10px_rgba(34,211,238,0.8)] opacity-50 z-30"
-                        />
-                        <motion.div
-                            animate={{ top: ['-20%', '100%'] }}
-                            transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
-                            className="absolute left-0 w-full h-20 bg-gradient-to-b from-transparent via-teal-500/10 to-transparent pointer-events-none"
-                        />
-                        <motion.div
-                            animate={{ top: ['120%', '-20%'] }}
-                            transition={{ duration: 5, repeat: Infinity, ease: "linear" }}
-                            className="absolute left-0 w-full h-20 bg-gradient-to-b from-transparent via-teal-500/20 to-transparent pointer-events-none"
-                        />
+                        <motion.div animate={{ top: ['-10%', '110%'] }} transition={{ duration: 15, repeat: Infinity, ease: "linear" }} className="absolute left-0 w-full h-[2px] bg-teal-400 shadow-[0_0_10px_rgba(34,211,238,0.8)] opacity-50 z-30" />
+                        <motion.div animate={{ top: ['-20%', '100%'] }} transition={{ duration: 15, repeat: Infinity, ease: "linear" }} className="absolute left-0 w-full h-20 bg-gradient-to-b from-transparent via-teal-500/10 to-transparent pointer-events-none" />
+                        <motion.div animate={{ top: ['120%', '-20%'] }} transition={{ duration: 5, repeat: Infinity, ease: "linear" }} className="absolute left-0 w-full h-20 bg-gradient-to-b from-transparent via-teal-500/20 to-transparent pointer-events-none" />
                     </motion.div>
 
+                    {/* ID Card */}
                     <div className="mt-6 w-full max-w-xs space-y-2 font-mono text-xs text-cyan-500/80">
                         <div className="flex justify-between border-b border-cyan-900 pb-1">
                             <span>ID:</span>
-                            <span className="text-white font-bold tracking-wider">ALONSO CORREA</span>
+                            <span className="text-white font-bold tracking-wider">{t('about.id_name')}</span>
                         </div>
                         <div className="flex justify-between border-b border-cyan-900 pb-1">
                             <span>BASE:</span>
-                            <span className="text-white">CDMX, MEXICO</span>
+                            <span className="text-white">{t('about.base')}</span>
                         </div>
                         <div className="flex justify-between border-b border-cyan-900 pb-1">
                             <span>STATUS:</span>
-                            <span className="text-green-400 animate-pulse">● ONLINE</span>
+                            <span className="text-green-400 animate-pulse">{t('about.status')}</span>
                         </div>
                         <div className="flex justify-between border-b border-cyan-900 pb-1">
                             <span>LANG:</span>
-                            <span className="text-white">ES / EN / DE(A2)</span>
+                            <span className="text-white">{t('about.lang')}</span>
                         </div>
                     </div>
                 </div>
@@ -145,33 +133,39 @@ export const About = () => {
                         whileInView={{ opacity: 1, x: 0 }}
                         viewport={{ once: true }}
                     >
+                        {/* Títulos Principales */}
                         <h1 className="font-gibed text-5xl md:text-7xl mb-2 text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.5)] tracking-wider">
-                            ALONSO CORREA
+                            {t('about.id_name')}
                         </h1>
-
                         <h2 className="font-mono text-xl md:text-2xl mb-2 text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500 font-bold">
-                            SYSTEM ARCHITECT
+                            {t('about.title')}
                         </h2>
                         <h3 className="text-sm md:text-lg text-gray-400 font-mono mb-6 tracking-[0.2em] uppercase">
-                            & Supply Chain Consultant
+                            {t('about.subtitle')}
                         </h3>
 
+                        {/* Narrativa segmentada para los estilos en naranja */}
                         <div className="bg-gray-900/40 border-l-4 border-amber-500 p-6 mb-10 rounded-r-lg backdrop-blur-sm relative overflow-hidden">
                             <div className="absolute top-0 right-0 p-2 opacity-10">
                                 <FaIndustry size={60} />
                             </div>
 
                             <p className="text-gray-300 leading-relaxed text-lg relative z-10">
-                                "El código es solo otra forma de logística. Mi experiencia como <span className="text-amber-400 font-bold">Consultor de Supply Chain</span> y en <span className="text-amber-400 font-bold">Estimación de Construcción</span> me enseñó que un error en los datos cuesta millones."
+                                {t('about.p1_1')}
+                                <span className="text-amber-400 font-bold">{t('about.p1_2')}</span>
+                                {t('about.p1_3')}
+                                <span className="text-amber-400 font-bold">{t('about.p1_4')}</span>
+                                {t('about.p1_5')}
                             </p>
                             <p className="text-gray-300 leading-relaxed mt-4 relative z-10 text-sm md:text-base">
-                                No solo construyo apps; diseño sistemas. Traduzco la complejidad del mundo real —inventarios masivos, costos fluctuantes, bases de datos pesadas— en arquitecturas de software eficientes y escalables. <span className="text-white font-semibold italic block mt-2 border-t border-gray-700 pt-2">Donde otros ven tablas, yo veo flujos de optimización.</span>
+                                {t('about.p2')} <span className="text-white font-semibold italic block mt-2 border-t border-gray-700 pt-2">{t('about.p3')}</span>
                             </p>
                         </div>
                     </motion.div>
 
+                    {/* Habilidades */}
                     <div className="space-y-10">
-                        {skills.map((skillGroup, index) => (
+                        {skillsData.map((skillGroup, index) => (
                             <motion.div
                                 key={index}
                                 initial={{ opacity: 0, y: 20 }}
@@ -189,14 +183,10 @@ export const About = () => {
                                         <div key={i} className="relative">
                                             <div className="flex justify-between text-xs font-mono text-gray-300 mb-1 items-end">
                                                 <span className="text-white font-semibold tracking-wide">{item.name}</span>
-                                                <span className="text-cyan-500">{item.level}% EFFICIENCY</span>
+                                                <span className="text-cyan-500">{item.level}{t('about.efficiency')}</span>
                                             </div>
 
-                                            <TacticalSkillBar
-                                                level={item.level}
-                                                color={item.color}
-                                                shadow={item.shadow}
-                                            />
+                                            <TacticalSkillBar level={item.level} color={item.color} shadow={item.shadow} />
                                         </div>
                                     ))}
                                 </div>
