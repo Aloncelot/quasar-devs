@@ -126,27 +126,21 @@ export const Navbar = () => {
                     >
                         <div className="flex flex-col items-center py-8 gap-6">
                             {navLinks.map((link, i) => (
-                                <motion.a
+                                <motion.div
                                     key={link.name}
-                                    href={link.href}
                                     initial={{ opacity: 0, x: -20 }}
                                     animate={{ opacity: 1, x: 0 }}
                                     transition={{ delay: i * 0.1 }}
-                                    onClick={(e) => {
-                                        setIsOpen(false);
-                                        const href = link.href;
-                                        if (href.startsWith('#') && href !== '#') {
-                                            e.preventDefault();
-                                            const element = document.querySelector(href);
-                                            if (element) {
-                                                element.scrollIntoView({ behavior: 'smooth' });
-                                            }
-                                        }
-                                    }}
-                                    className="text-lg font-mono text-gray-300 hover:text-teal-400 tracking-widest w-full text-center py-2 border-l-2 border-transparent hover:border-teal-500 hover:bg-teal-500/10 transition-all flex justify-center items-center"
+                                    className="w-full flex justify-center"
                                 >
-                                    {link.name}
-                                </motion.a>
+                                    <Link
+                                        href={link.href}
+                                        onClick={() => setIsOpen(false)}
+                                        className="text-lg font-mono text-gray-300 hover:text-teal-400 tracking-widest w-full text-center py-2 border-l-2 border-transparent hover:border-teal-500 hover:bg-teal-500/10 transition-all flex justify-center items-center"
+                                    >
+                                        {link.name}
+                                    </Link>
+                                </motion.div>
                             ))}
                         </div>
                     </motion.div>
