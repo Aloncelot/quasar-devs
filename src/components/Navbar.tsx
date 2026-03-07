@@ -106,13 +106,6 @@ export const Navbar = () => {
                 ))}
             </div>
 
-            <button
-                onClick={() => setIsOpen(!isOpen)}
-                className="md:hidden text-teal-500 p-2 border border-teal-500/30 rounded bg-teal-500/10 active:scale-95 transition-transform"
-            >
-                {isOpen ? <FaTimes size={20} /> : <FaBars size={20} />}
-            </button>
-
             <div className="flex items-center gap-4">                
                 <LanguageToggle />
                 <button
@@ -129,7 +122,7 @@ export const Navbar = () => {
                         initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: 1, height: 'auto' }}
                         exit={{ opacity: 0, height: 0 }}
-                        className="md:hidden bg-black/95 border-b border-teal-900/50 overflow-hidden backdrop-blur-xl"
+                        className="absolute top-full left-0 w-full md:hidden bg-black/95 border-b border-teal-900/50 overflow-hidden backdrop-blur-xl"
                     >
                         <div className="flex flex-col items-center py-8 gap-6">
                             {navLinks.map((link, i) => (
@@ -139,8 +132,18 @@ export const Navbar = () => {
                                     initial={{ opacity: 0, x: -20 }}
                                     animate={{ opacity: 1, x: 0 }}
                                     transition={{ delay: i * 0.1 }}
-                                    onClick={() => setIsOpen(false)}
-                                    className="text-lg font-mono text-gray-300 hover:text-teal-400 tracking-widest w-full text-center py-2 border-l-2 border-transparent hover:border-teal-500 hover:bg-teal-500/10 transition-all"
+                                    onClick={(e) => {
+                                        setIsOpen(false);
+                                        const href = link.href;
+                                        if (href.startsWith('#') && href !== '#') {
+                                            e.preventDefault();
+                                            const element = document.querySelector(href);
+                                            if (element) {
+                                                element.scrollIntoView({ behavior: 'smooth' });
+                                            }
+                                        }
+                                    }}
+                                    className="text-lg font-mono text-gray-300 hover:text-teal-400 tracking-widest w-full text-center py-2 border-l-2 border-transparent hover:border-teal-500 hover:bg-teal-500/10 transition-all flex justify-center items-center"
                                 >
                                     {link.name}
                                 </motion.a>
