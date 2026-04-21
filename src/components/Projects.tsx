@@ -108,7 +108,7 @@ export const Projects = () => {
             tech: "REACT + FIREBASE",
             description: t('projects.p2_desc'),
             color: "#00c3d9",
-            url: "https://xn--jorge-valdez-nutricin-clnica-9uc9o.com/",
+            url: "https://www.jorge-valdez-nutricion-clinica.com.mx",
             icon: <FaCode />
         },
         {
