@@ -164,37 +164,52 @@ const TravelingSpark = () => {
     );
 };
 
-const MobileProjectCard = ({ project, t }: { project: any, t: any }) => (
-    <div className="relative group w-full mb-8">
-        <div className="absolute inset-0 bg-gray-900/80 border border-gray-700 rounded-lg transform transition-transform duration-300 group-hover:scale-[1.02]" />
-        <div
-            className="absolute inset-0 opacity-20 blur-xl transition-opacity group-hover:opacity-40"
-            style={{ backgroundColor: project.color }}
-        />
-        <div className="relative p-6 flex flex-col gap-4 z-10">
-            <div className="flex justify-between items-start">
-                <div className="p-3 rounded bg-black/50 border border-white/10 text-white text-xl">
-                    {project.icon}
+const MobileProjectCard = ({ project, t }: { project: any, t: any }) => {
+    // Variable táctica para determinar si el puerto está abierto
+    const isClickable = project.url !== '#';
+
+    return (
+        <div className="relative group w-full mb-8">
+            <div className="absolute inset-0 bg-gray-900/80 border border-gray-700 rounded-lg transform transition-transform duration-300 group-hover:scale-[1.02]" />
+            <div
+                className="absolute inset-0 opacity-20 blur-xl transition-opacity group-hover:opacity-40"
+                style={{ backgroundColor: project.color }}
+            />
+            <div className="relative p-6 flex flex-col gap-4 z-10">
+                <div className="flex justify-between items-start">
+                    <div className="p-3 rounded bg-black/50 border border-white/10 text-white text-xl">
+                        {project.icon}
+                    </div>
+                    <div className="text-right">
+                        <h3 className="text-xl font-gibed text-white tracking-wider">{project.title}</h3>
+                        <span className="text-xs font-mono font-bold" style={{ color: project.color }}>{project.tech}</span>
+                    </div>
                 </div>
-                <div className="text-right">
-                    <h3 className="text-xl font-gibed text-white tracking-wider">{project.title}</h3>
-                    <span className="text-xs font-mono font-bold" style={{ color: project.color }}>{project.tech}</span>
-                </div>
+                <p className="text-sm text-gray-300 font-mono leading-relaxed border-l-2 pl-4" style={{ borderColor: project.color }}>
+                    {project.description}
+                </p>
+                
+                {/* Lógica condicional de renderizado */}
+                {isClickable ? (
+                    <a
+                        href={project.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mt-2 flex items-center justify-center gap-2 w-full py-3 bg-white/5 border border-white/10 text-white font-mono text-xs hover:bg-white/10 hover:border-white/30 transition-all uppercase tracking-widest"
+                    >
+                        {t('projects.btn_access')} <FaExternalLinkAlt />
+                    </a>
+                ) : (
+                    <div className="mt-2 flex items-center justify-center gap-2 w-full py-3 bg-black/40 border border-white/5 text-gray-500 font-mono text-xs uppercase tracking-widest cursor-not-allowed select-none">
+                        {t('projects.coming_soon')}
+                    </div>
+                )}
+                
             </div>
-            <p className="text-sm text-gray-300 font-mono leading-relaxed border-l-2 pl-4" style={{ borderColor: project.color }}>
-                {project.description}
-            </p>
-            <a
-                href={project.url}
-                target="_blank"
-                className="mt-2 flex items-center justify-center gap-2 w-full py-3 bg-white/5 border border-white/10 text-white font-mono text-xs hover:bg-white/10 hover:border-white/30 transition-all uppercase tracking-widest"
-            >
-                {t('projects.btn_access')} <FaExternalLinkAlt />
-            </a>
+            <div className="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[length:100%_4px,3px_100%] pointer-events-none opacity-20 rounded-lg" />
         </div>
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[length:100%_4px,3px_100%] pointer-events-none opacity-20 rounded-lg" />
-    </div>
-);
+    );
+};
 
 export const Projects = () => {
     const { t } = useLanguage();
