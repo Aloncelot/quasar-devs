@@ -48,15 +48,15 @@ export const Services = () => {
         },
         {
             id: 3,
-            title: t('services.s1_title'), // Ejemplo, asumiendo s3_title en el dict real
-            description: t('services.s1_desc'), // Ejemplo, asumiendo s3_desc en el dict real
+            title: t('services.s3_title'),
+            description: t('services.s1_desc'),
             icon: <FaMobileAlt className="text-4xl" />,
-            tech: ["Framer", "Tailwind", "Figma"]
+            tech: ["Framer", "Tailwind", "Figma", "Flutter"]
         },
         {
             id: 4,
-            title: t('services.s1_title'), // Ejemplo, asumiendo s4_title en el dict real
-            description: t('services.s1_desc'), // Ejemplo, asumiendo s4_desc en el dict real
+            title: t('services.s4_title'),
+            description: t('services.s1_desc'),
             icon: <FaCloud className="text-4xl" />,
             tech: ["AWS / Azure", "Firebase", "Python"]
         }
