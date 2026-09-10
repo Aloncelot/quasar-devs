@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useRef, useState, useMemo } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { Text, useCursor, OrbitControls, Billboard, Line, Sparkles } from '@react-three/drei';
 import { EffectComposer, Bloom } from '@react-three/postprocessing';
@@ -17,37 +17,116 @@ const POSITIONS: [number, number, number][] = [
     [4.1, 2.1, -0.9],
 ];
 
-const ProjectStar = ({ data, position, index, t }: any) => {
-    const mesh = useRef<THREE.Mesh>(null);
+// Variantes de turquesa, una por proyecto
+const TURQUOISE_VARIANTS = ['#5eead4', '#2dd4bf', '#22d3ee', '#67e8f9'];
+
+const STAR_PARTICLE_COUNT = 36;
+
+// Genera una nube de partículas agrupada tipo "estrella", con jitter de color
+// alrededor del tono base para que se vea chispeante en vez de plana.
+function createStarGeometry(baseColorHex: string) {
+    const base = new THREE.Color(baseColorHex);
+    const hsl = { h: 0, s: 0, l: 0 };
+    base.getHSL(hsl);
+
+    const positions = new Float32Array(STAR_PARTICLE_COUNT * 3);
+    const colors = new Float32Array(STAR_PARTICLE_COUNT * 3);
+
+    for (let i = 0; i < STAR_PARTICLE_COUNT; i++) {
+        // Distribución concentrada al centro (aprox. gaussiana) para un núcleo
+        // brillante con partículas más dispersas alrededor.
+        const r = ((Math.random() + Math.random() + Math.random()) / 3) * 0.17;
+        const theta = Math.random() * Math.PI * 2;
+        const phi = Math.acos(2 * Math.random() - 1);
+
+        positions[i * 3] = r * Math.sin(phi) * Math.cos(theta);
+        positions[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
+        positions[i * 3 + 2] = r * Math.cos(phi);
+
+        const c = new THREE.Color();
+        c.setHSL(
+            THREE.MathUtils.clamp(hsl.h + (Math.random() - 0.5) * 0.02, 0, 1),
+            THREE.MathUtils.clamp(hsl.s + (Math.random() - 0.5) * 0.25, 0, 1),
+            THREE.MathUtils.clamp(hsl.l + (Math.random() - 0.5) * 0.3, 0.25, 0.9)
+        );
+        colors[i * 3] = c.r;
+        colors[i * 3 + 1] = c.g;
+        colors[i * 3 + 2] = c.b;
+    }
+
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+    return geometry;
+}
+
+// Textura de glow circular generada en canvas (sin depender de ninguna imagen externa),
+// compartida entre todas las estrellas.
+let sharedGlowTexture: THREE.Texture | null = null;
+function getGlowTexture() {
+    if (sharedGlowTexture) return sharedGlowTexture;
+    if (typeof document === 'undefined') return null;
+    const canvas = document.createElement('canvas');
+    canvas.width = 64;
+    canvas.height = 64;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return null;
+    const gradient = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
+    gradient.addColorStop(0, 'rgba(255,255,255,1)');
+    gradient.addColorStop(0.35, 'rgba(255,255,255,0.9)');
+    gradient.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, 64, 64);
+    sharedGlowTexture = new THREE.CanvasTexture(canvas);
+    return sharedGlowTexture;
+}
+
+const ProjectStar = ({ data, position, index, t, color }: any) => {
+    const scaleRef = useRef<THREE.Group>(null);
     const [hovered, setHovered] = useState(false);
     const clickable = data.url !== '#';
     useCursor(hovered && clickable);
 
+    const geometry = useMemo(() => createStarGeometry(color), [color]);
+    const texture = useMemo(() => getGlowTexture(), []);
+
     useFrame((state, delta) => {
-        if (mesh.current) {
+        if (scaleRef.current) {
             // Titileo sutil tipo estrella real, más notorio al hacer hover
-            const twinkle = 1 + Math.sin(state.clock.elapsedTime * 1.4 + index * 2) * 0.06;
-            easing.damp3(mesh.current.scale, hovered ? 1.7 : twinkle, 0.15, delta);
+            const twinkle = 1 + Math.sin(state.clock.elapsedTime * 1.4 + index * 2) * 0.08;
+            easing.damp3(scaleRef.current.scale, hovered ? 1.6 : twinkle, 0.15, delta);
         }
     });
 
     return (
         <group position={position}>
+            {/* Área de interacción invisible: más confiable que raycastear partículas sueltas */}
             <mesh
-                ref={mesh}
                 onClick={() => clickable && window.open(data.url, '_blank')}
                 onPointerOver={(e) => { e.stopPropagation(); setHovered(true); }}
                 onPointerOut={() => setHovered(false)}
             >
-                <icosahedronGeometry args={[0.16, 1]} />
-                <meshStandardMaterial
-                    color={data.color}
-                    emissive={data.color}
-                    emissiveIntensity={hovered ? 3.2 : 1.3}
-                    toneMapped={false}
-                />
+                <sphereGeometry args={[0.24, 8, 8]} />
+                <meshBasicMaterial transparent opacity={0} depthWrite={false} />
             </mesh>
-            <pointLight distance={3.5} intensity={hovered ? 2.2 : 0.7} color={data.color} />
+
+            <group ref={scaleRef}>
+                <points geometry={geometry}>
+                    <pointsMaterial
+                        size={0.055}
+                        map={texture ?? undefined}
+                        vertexColors
+                        transparent
+                        opacity={0.95}
+                        depthWrite={false}
+                        blending={THREE.AdditiveBlending}
+                        sizeAttenuation
+                        toneMapped={false}
+                    />
+                </points>
+            </group>
+
+            <pointLight distance={3.5} intensity={hovered ? 2.2 : 0.8} color={color} />
 
             <Billboard>
                 <Text position={[0, 0.34, 0]} fontSize={0.13} color="#555" anchorX="center" anchorY="middle" font="/fonts/gibed.otf">
@@ -58,7 +137,7 @@ const ProjectStar = ({ data, position, index, t }: any) => {
                         <Text position={[0, -0.32, 0]} fontSize={0.15} color="#fff" anchorX="center" anchorY="middle" font="/fonts/gibed.otf">
                             {data.title}
                         </Text>
-                        <Text position={[0, -0.5, 0]} fontSize={0.085} color={data.color} anchorX="center" anchorY="middle">
+                        <Text position={[0, -0.5, 0]} fontSize={0.085} color={color} anchorX="center" anchorY="middle">
                             {clickable ? data.tech : `${data.tech} · ${t('projects.coming_soon')}`}
                         </Text>
                     </>
@@ -82,6 +161,54 @@ const FlightPath = () => (
     // Tip: si luego quieres que la línea "fluya" con el tiempo (efecto transmisión de datos),
     // pásale un ref y en useFrame haz: ref.current.material.dashOffset -= delta * 0.3
 );
+
+// Recorrido precalculado para la partícula viajera (mismo trazo que FlightPath)
+const PATH_VECTORS = POSITIONS.map((p) => new THREE.Vector3(...p));
+const SEGMENT_LENGTHS = PATH_VECTORS.slice(1).map((p, i) => p.distanceTo(PATH_VECTORS[i]));
+const TOTAL_LENGTH = SEGMENT_LENGTHS.reduce((sum, l) => sum + l, 0);
+const TRAVEL_DURATION = 6; // segundos por recorrido completo
+
+// Partícula brillante que viaja por la ruta, con fade-in al nacer y fade-out al llegar
+// al final. Al terminar el ciclo (t vuelve a 0) "nace" de nuevo en el origen.
+const TravelingSpark = () => {
+    const meshRef = useRef<THREE.Mesh>(null);
+    const materialRef = useRef<THREE.MeshBasicMaterial>(null);
+    const progress = useRef(0);
+
+    useFrame((_, delta) => {
+        progress.current = (progress.current + delta / TRAVEL_DURATION) % 1;
+        const distAlong = progress.current * TOTAL_LENGTH;
+
+        let remaining = distAlong;
+        let segIndex = 0;
+        while (segIndex < SEGMENT_LENGTHS.length - 1 && remaining > SEGMENT_LENGTHS[segIndex]) {
+            remaining -= SEGMENT_LENGTHS[segIndex];
+            segIndex++;
+        }
+        const segLength = SEGMENT_LENGTHS[segIndex] || 1;
+        const localT = segLength > 0 ? remaining / segLength : 0;
+
+        if (meshRef.current) {
+            meshRef.current.position.lerpVectors(PATH_VECTORS[segIndex], PATH_VECTORS[segIndex + 1], localT);
+        }
+
+        const FADE = 0.1;
+        let opacity = 1;
+        if (progress.current < FADE) opacity = progress.current / FADE;
+        else if (progress.current > 1 - FADE) opacity = (1 - progress.current) / FADE;
+
+        if (materialRef.current) {
+            materialRef.current.opacity = opacity;
+        }
+    });
+
+    return (
+        <mesh ref={meshRef}>
+            <sphereGeometry args={[0.055, 8, 8]} />
+            <meshBasicMaterial ref={materialRef} color="#a7fff0" transparent toneMapped={false} />
+        </mesh>
+    );
+};
 
 const MobileProjectCard = ({ project, t }: { project: any, t: any }) => (
     <div className="relative group w-full mb-8">
@@ -196,8 +323,16 @@ export const Projects = () => {
 
                     <group position={[0, -0.3, 0]}>
                         <FlightPath />
+                        <TravelingSpark />
                         {projectsData.map((project, i) => (
-                            <ProjectStar key={project.id} data={project} position={POSITIONS[i]} index={i} t={t} />
+                            <ProjectStar
+                                key={project.id}
+                                data={project}
+                                position={POSITIONS[i]}
+                                index={i}
+                                t={t}
+                                color={TURQUOISE_VARIANTS[i % TURQUOISE_VARIANTS.length]}
+                            />
                         ))}
                     </group>
 
