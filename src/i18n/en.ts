@@ -27,6 +27,7 @@ export const en = {
         title: "ARCHIVE",
         subtitle: "EXPLORE THE SYSTEM",
         btn_access: "Access System",
+        coming_soon: "COMING SOON",
         p1_title: "COST ESTIMATOR",
         p1_desc: "Construction cost estimation system with a real-time database.",
         p2_title: "NUTRITION PRO",

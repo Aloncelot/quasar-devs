@@ -29,6 +29,7 @@ export const es = {
         title: "ARCHIVO",
         subtitle: "EXPLORA EL SISTEMA",
         btn_access: "Acceder al Sistema",
+        coming_soon: "PRÓXIMAMENTE",
         p1_title: "COST ESTIMATOR",
         p1_desc: "Sistema de cálculo de costos de construcción con base de datos en tiempo real.",
         p2_title: "NUTRITION PRO",

@@ -2,59 +2,86 @@
 
 import { useRef, useState } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { MeshReflectorMaterial, Text, useCursor, BakeShadows, OrbitControls, Billboard } from '@react-three/drei';
-import { EffectComposer, Bloom, DepthOfField } from '@react-three/postprocessing';
+import { Text, useCursor, OrbitControls, Billboard, Line, Sparkles } from '@react-three/drei';
+import { EffectComposer, Bloom } from '@react-three/postprocessing';
 import { easing } from 'maath';
 import * as THREE from 'three';
 import { FaExternalLinkAlt, FaDatabase, FaCode, FaCube, FaDumbbell } from 'react-icons/fa';
 import { useLanguage } from '@/context/LanguageContext';
 
-const RADIUS = 3;
+// Posiciones fijas a mano: no es un círculo mecánico, se lee como una ruta de vuelo real
+const POSITIONS: [number, number, number][] = [
+    [-4.2, 1.6, -1.4],
+    [-1.6, 2.9, 0.6],
+    [1.7, 0.5, 1.3],
+    [4.1, 2.1, -0.9],
+];
 
-const ProjectMonolith = ({ data, index, total, onFocus, ...props }: any) => {
+const ProjectStar = ({ data, position, index, t }: any) => {
     const mesh = useRef<THREE.Mesh>(null);
-    const [hovered, setHover] = useState(false);
-    useCursor(hovered);
-
-    const angle = (index / total) * Math.PI * 2;
-    const x = Math.sin(angle) * RADIUS;
-    const z = Math.cos(angle) * RADIUS;
+    const [hovered, setHovered] = useState(false);
+    const clickable = data.url !== '#';
+    useCursor(hovered && clickable);
 
     useFrame((state, delta) => {
         if (mesh.current) {
-            mesh.current.position.y = 0.8 + Math.sin(state.clock.elapsedTime + index) * 0.1;
-            easing.damp3(mesh.current.scale, hovered ? 1.1 : 1, 0.1, delta);
+            // Titileo sutil tipo estrella real, más notorio al hacer hover
+            const twinkle = 1 + Math.sin(state.clock.elapsedTime * 1.4 + index * 2) * 0.06;
+            easing.damp3(mesh.current.scale, hovered ? 1.7 : twinkle, 0.15, delta);
         }
     });
 
     return (
-        <Billboard position={[x, 0, z]} follow={true} lockX={false} lockY={false} lockZ={false} {...props}>
+        <group position={position}>
             <mesh
                 ref={mesh}
-                onClick={() => window.open(data.url, '_blank')}
-                onPointerOver={(e) => { e.stopPropagation(); setHover(true); onFocus(new THREE.Vector3(x, 0, z)); }}
-                onPointerOut={() => setHover(false)}
+                onClick={() => clickable && window.open(data.url, '_blank')}
+                onPointerOver={(e) => { e.stopPropagation(); setHovered(true); }}
+                onPointerOut={() => setHovered(false)}
             >
-                <boxGeometry args={[2.2, 1.4, 0.05]} />
+                <icosahedronGeometry args={[0.16, 1]} />
                 <meshStandardMaterial
-                    color="#151515"
-                    roughness={0.2}
-                    metalness={0.8}
+                    color={data.color}
                     emissive={data.color}
-                    emissiveIntensity={hovered ? 2 : 0.2}
+                    emissiveIntensity={hovered ? 3.2 : 1.3}
                     toneMapped={false}
                 />
-                <Text position={[0, 0.2, 0.06]} fontSize={0.2} font="/fonts/gibed.otf" color="#ffffff" anchorX="center" anchorY="middle">
-                    {data.title}
-                </Text>
-                <Text position={[0, -0.2, 0.06]} fontSize={0.1} color={data.color} anchorX="center" anchorY="middle">
-                    {data.tech}
-                </Text>
             </mesh>
-            <pointLight position={[0, -0.4, 0.5]} distance={2} intensity={1} color={data.color} />
-        </Billboard>
+            <pointLight distance={3.5} intensity={hovered ? 2.2 : 0.7} color={data.color} />
+
+            <Billboard>
+                <Text position={[0, 0.34, 0]} fontSize={0.13} color="#555" anchorX="center" anchorY="middle" font="/fonts/gibed.otf">
+                    {`0${index + 1}`}
+                </Text>
+                {hovered && (
+                    <>
+                        <Text position={[0, -0.32, 0]} fontSize={0.15} color="#fff" anchorX="center" anchorY="middle" font="/fonts/gibed.otf">
+                            {data.title}
+                        </Text>
+                        <Text position={[0, -0.5, 0]} fontSize={0.085} color={data.color} anchorX="center" anchorY="middle">
+                            {clickable ? data.tech : `${data.tech} · ${t('projects.coming_soon')}`}
+                        </Text>
+                    </>
+                )}
+            </Billboard>
+        </group>
     );
 };
+
+const FlightPath = () => (
+    <Line
+        points={POSITIONS}
+        color="#3a3a3a"
+        lineWidth={1}
+        dashed
+        dashSize={0.08}
+        gapSize={0.06}
+        transparent
+        opacity={0.5}
+    />
+    // Tip: si luego quieres que la línea "fluya" con el tiempo (efecto transmisión de datos),
+    // pásale un ref y en useFrame haz: ref.current.material.dashOffset -= delta * 0.3
+);
 
 const MobileProjectCard = ({ project, t }: { project: any, t: any }) => (
     <div className="relative group w-full mb-8">
@@ -89,7 +116,6 @@ const MobileProjectCard = ({ project, t }: { project: any, t: any }) => (
 );
 
 export const Projects = () => {
-    const [focusTarget, setFocusTarget] = useState(new THREE.Vector3(0, 0, 0));
     const { t } = useLanguage();
 
     const projectsData = [
@@ -150,56 +176,34 @@ export const Projects = () => {
             </div>
 
             <div className="hidden md:block absolute inset-0 z-0">
-                <Canvas shadows dpr={[1, 1.5]} camera={{ position: [0, 4, 10], fov: 35 }}>
+                <Canvas dpr={[1, 1.5]} camera={{ position: [0, 2.4, 9], fov: 40 }}>
 
                     <color attach="background" args={['#050505']} />
-                    <fog attach="fog" args={['#050505', 5, 30]} />
-                    <hemisphereLight intensity={0.3} groundColor="black" />
-                    <spotLight position={[10, 20, 10]} angle={0.5} penumbra={1} intensity={1} />
+                    <fog attach="fog" args={['#050505', 6, 22]} />
+                    <hemisphereLight intensity={0.25} groundColor="black" />
+
+                    <Sparkles count={200} scale={12} size={1.2} speed={0.15} color="#ffffff" opacity={0.4} />
 
                     <OrbitControls
                         enablePan={false}
                         enableZoom={false}
                         enableRotate={true}
-                        minPolarAngle={0}
-                        maxPolarAngle={Math.PI / 2.1}
-                        autoRotate={true}
-                        autoRotateSpeed={0.5}
+                        minPolarAngle={Math.PI / 3}
+                        maxPolarAngle={Math.PI / 1.8}
+                        autoRotate
+                        autoRotateSpeed={0.35}
                     />
 
-                    <group position={[0, -0.5, 0]}>
+                    <group position={[0, -0.3, 0]}>
+                        <FlightPath />
                         {projectsData.map((project, i) => (
-                            <ProjectMonolith
-                                key={project.id}
-                                data={project}
-                                index={i}
-                                total={projectsData.length}
-                                onFocus={setFocusTarget}
-                            />
+                            <ProjectStar key={project.id} data={project} position={POSITIONS[i]} index={i} t={t} />
                         ))}
-                        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.8, 0]}>
-                            <planeGeometry args={[100, 100]} />
-                            <MeshReflectorMaterial
-                                blur={[300, 100]}
-                                resolution={2048}
-                                mixBlur={1}
-                                mixStrength={40}
-                                roughness={1}
-                                depthScale={1.2}
-                                minDepthThreshold={0.4}
-                                maxDepthThreshold={1.4}
-                                color="#080808"
-                                metalness={0.5}
-                                mirror={1}
-                            />
-                        </mesh>
                     </group>
 
                     <EffectComposer>
-                        <Bloom luminanceThreshold={1} mipmapBlur intensity={1.2} radius={0.5} />
-                        <DepthOfField target={focusTarget} focalLength={0.6} bokehScale={4} height={700} />
+                        <Bloom luminanceThreshold={0.8} mipmapBlur intensity={1.4} radius={0.6} />
                     </EffectComposer>
-                    <BakeShadows />
                 </Canvas>
             </div>
         </section>
