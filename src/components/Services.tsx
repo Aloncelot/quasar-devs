@@ -49,14 +49,14 @@ export const Services = () => {
         {
             id: 3,
             title: t('services.s3_title'),
-            description: t('services.s1_desc'),
+            description: t('services.s3_desc'),
             icon: <FaMobileAlt className="text-4xl" />,
             tech: ["Framer", "Tailwind", "Figma", "Flutter"]
         },
         {
             id: 4,
             title: t('services.s4_title'),
-            description: t('services.s1_desc'),
+            description: t('services.s4_desc'),
             icon: <FaCloud className="text-4xl" />,
             tech: ["AWS / Azure", "Firebase", "Python"]
         }
