@@ -19,9 +19,9 @@ export const en = {
         s2_title: "Immersive 3D Experiences",
         s2_desc: "We break the flat screen barrier. We integrate 3D models, particles, and shaders for websites that leave a mark.",
         s3_title: "Futuristic UI/UX",
-        s3_desc: "Designs that don't look like they're from this planet. Clean, dark interfaces with micro-interactions that guide the user.",
+        s3_desc: "Interfaces that feel as good as they look. Product design, visual systems, and micro-interactions that guide the user seamlessly—from Figma to production without losing a single detail.",
         s4_title: "Cloud & Data Intelligence",
-        s4_desc: "Scalable infrastructure and intelligent data management. We deploy your project to the cloud with security and efficiency."
+        s4_desc: "From scattered spreadsheets to a robust architecture. I design databases, APIs, and cloud deployments so your business can scale without crashing as it grows."
     },
     projects: {
         title: "ARCHIVE",

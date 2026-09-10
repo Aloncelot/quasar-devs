@@ -20,9 +20,9 @@ export const es = {
         s2_title: "Experiencias 3D Inmersivas",
         s2_desc: "Rompemos la barrera de la pantalla plana. Integramos modelos 3D, partículas y shaders para webs que dejan huella.",
         s3_title: "UI/UX Futurista",
-        s3_desc: "Diseños que no parecen de este planeta. Interfaces limpias, oscuras y con micro-interacciones que guían al usuario.",
+        s3_desc: "Interfaces que se sienten tan bien como se ven. Diseño de producto, sistemas visuales y microinteracciones que guían al usuario sin fricción — de Figma a producción sin perder detalle.",
         s4_title: "Cloud & Data Intelligence",
-        s4_desc: "Infraestructura escalable y gestión de datos inteligente. Desplegamos tu proyecto en la nube con seguridad y eficiencia."
+        s4_desc: "De hojas de cálculo dispersas a arquitectura real. Diseño bases de datos, APIs y despliegues en la nube para que tu negocio escale sin caerse cuando crece."
     },
 
     projects: {
