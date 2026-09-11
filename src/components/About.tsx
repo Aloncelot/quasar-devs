@@ -1,11 +1,9 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { FaDatabase, FaServer, FaCode, FaIndustry, FaRulerCombined } from 'react-icons/fa';
-import { SiDotnet, SiReact } from 'react-icons/si';
-import { VscAzure } from 'react-icons/vsc';
+import Image from 'next/image';
+import { FaDatabase, FaCode, FaIndustry } from 'react-icons/fa';
 
-// 1. IMPORTAMOS EL CEREBRO BILINGÜE
 import { useLanguage } from '@/context/LanguageContext';
 
 const TacticalSkillBar = ({ level, color, shadow }: { level: number, color: string, shadow: string }) => {
@@ -39,10 +37,8 @@ const TacticalSkillBar = ({ level, color, shadow }: { level: number, color: stri
 };
 
 export const About = () => {
-    // 2. EXTRAEMOS LA FUNCIÓN DE TRADUCCIÓN
     const { t } = useLanguage();
 
-    // 3. MOVEMOS EL ARRAY ADENTRO Y LO RENOMBRAMOS
     const skillsData = [
         {
             category: t('about.cat_core'),
@@ -58,15 +54,15 @@ export const About = () => {
             icon: <FaCode className="text-cyan-400" />,
             items: [
                 { name: "React / Next.js", level: 90, color: "bg-cyan-500", shadow: "shadow-cyan-500/50" },
-                { name: "Three.js / WebGL", level: 90, color: "bg-cyan-700", shadow: "shadow-cyan-700/50" },
+                { name: "Three.js / WebGL", level: 70, color: "bg-cyan-700", shadow: "shadow-cyan-700/50" },
             ]
         },
         {
             category: t('about.cat_domain'),
             icon: <FaIndustry className="text-amber-400" />,
             items: [
-                { name: t('about.domain_1'), level: 90, color: "bg-amber-500", shadow: "shadow-amber-500/50" },
-                { name: t('about.domain_2'), level: 85, color: "bg-amber-600", shadow: "shadow-amber-600/50" },
+                { name: t('about.domain_1'), level: 100, color: "bg-amber-500", shadow: "shadow-amber-500/50" },
+                { name: t('about.domain_2'), level: 100, color: "bg-amber-600", shadow: "shadow-amber-600/50" },
             ]
         }
     ];
@@ -98,7 +94,13 @@ export const About = () => {
                         <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-cyan-400" />
                         <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-cyan-400" />
                         <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-cyan-400" />
-                        <img src="AC2.jpeg" alt="Alonso Correa" className="w-full h-full object-cover opacity-90 transition-all duration-500 [filter:grayscale(100%)_brightness(70%)_sepia(100%)_hue-rotate(130deg)_saturate(400%)_contrast(250%)] group-hover:opacity-100" />
+                        <Image
+                            src="/AC2.jpeg"
+                            alt="Alonso Correa"
+                            fill
+                            sizes="(min-width: 768px) 320px, 256px"
+                            className="object-cover opacity-90 transition-all duration-500 [filter:grayscale(100%)_brightness(70%)_sepia(100%)_hue-rotate(130deg)_saturate(400%)_contrast(250%)] group-hover:opacity-100"
+                        />
                         <div className="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] z-20 bg-[length:100%_4px,3px_100%] pointer-events-none" />
                         <motion.div animate={{ top: ['-10%', '110%'] }} transition={{ duration: 15, repeat: Infinity, ease: "linear" }} className="absolute left-0 w-full h-[2px] bg-teal-400 shadow-[0_0_10px_rgba(34,211,238,0.8)] opacity-50 z-30" />
                         <motion.div animate={{ top: ['-20%', '100%'] }} transition={{ duration: 15, repeat: Infinity, ease: "linear" }} className="absolute left-0 w-full h-20 bg-gradient-to-b from-transparent via-teal-500/10 to-transparent pointer-events-none" />
