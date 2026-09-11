@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaBars, FaTimes } from 'react-icons/fa';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useLanguage } from '@/context/LanguageContext';
 
 const ScanlinesOverlay = () => (
@@ -33,10 +34,12 @@ const LanguageToggle = () => {
                     onClick={() => setLang('es')}
                     className="relative w-10 h-6 flex items-center justify-center z-10 overflow-hidden rounded-sm group"
                 >
-                    <img 
-                        src="/flag-mx.webp" 
-                        alt="ES" 
-                        className={`w-full h-full object-cover transition-all duration-300 ${lang === 'es' ? 'opacity-100' : 'opacity-30 grayscale'}`}
+                    <Image
+                        src="/flag-mx.webp"
+                        alt="ES"
+                        fill
+                        sizes="40px"
+                        className={`object-cover transition-all duration-300 ${lang === 'es' ? 'opacity-100' : 'opacity-30 grayscale'}`}
                     />
                     {lang === 'es' && <ScanlinesOverlay />}
                 </button>
@@ -45,10 +48,12 @@ const LanguageToggle = () => {
                     onClick={() => setLang('en')}
                     className="relative w-10 h-6 flex items-center justify-center z-10 overflow-hidden rounded-sm group"
                 >
-                    <img 
-                        src="/flag-en.png" 
-                        alt="EN" 
-                        className={`w-full h-full object-cover transition-all duration-300 ${lang === 'en' ? 'opacity-100' : 'opacity-30 grayscale'}`}
+                    <Image
+                        src="/flag-en.png"
+                        alt="EN"
+                        fill
+                        sizes="40px"
+                        className={`object-cover transition-all duration-300 ${lang === 'en' ? 'opacity-100' : 'opacity-30 grayscale'}`}
                     />
                     {lang === 'en' && <ScanlinesOverlay />}
                 </button>

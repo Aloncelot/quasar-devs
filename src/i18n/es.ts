@@ -9,7 +9,8 @@ export const es = {
 
     hero: {
         title: "QUASAR DEVS",
-        subtitle: "CONSTRUYENDO EL FUTURO DIGITAL"
+        subtitle: "CONSTRUYENDO EL FUTURO DIGITAL",
+        cta: "VER PROYECTOS"
     },
 
     services: {
@@ -32,7 +33,7 @@ export const es = {
         coming_soon: "PRÓXIMAMENTE",
         p1_title: "COST ESTIMATOR",
         p1_desc: "Sistema de cálculo de costos de construcción con base de datos en tiempo real.",
-        p2_title: "NUTRITION CLINICA JV",
+        p2_title: "NUTRITION PRO",
         p2_desc: "Plataforma para nutriólogos con seguimiento de pacientes y dietas.",
         p3_title: "QUASAR DEVS",
         p3_desc: "Portafolio inmersivo con efectos de partículas y shaders personalizados.",

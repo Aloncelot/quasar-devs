@@ -58,15 +58,15 @@ export const About = () => {
             icon: <FaCode className="text-cyan-400" />,
             items: [
                 { name: "React / Next.js", level: 90, color: "bg-cyan-500", shadow: "shadow-cyan-500/50" },
-                { name: "Three.js / WebGL", level: 70, color: "bg-cyan-700", shadow: "shadow-cyan-700/50" },
+                { name: "Three.js / WebGL", level: 90, color: "bg-cyan-700", shadow: "shadow-cyan-700/50" },
             ]
         },
         {
             category: t('about.cat_domain'),
             icon: <FaIndustry className="text-amber-400" />,
             items: [
-                { name: t('about.domain_1'), level: 100, color: "bg-amber-500", shadow: "shadow-amber-500/50" },
-                { name: t('about.domain_2'), level: 100, color: "bg-amber-600", shadow: "shadow-amber-600/50" },
+                { name: t('about.domain_1'), level: 90, color: "bg-amber-500", shadow: "shadow-amber-500/50" },
+                { name: t('about.domain_2'), level: 85, color: "bg-amber-600", shadow: "shadow-amber-600/50" },
             ]
         }
     ];

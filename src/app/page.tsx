@@ -57,6 +57,15 @@ export default function Home() {
           >
             {t('hero.subtitle')}
           </motion.p>
+
+          {/* CTA: el resto del contenedor tiene pointer-events-none, por eso se re-habilita aquí */}
+          <motion.a
+            href="#proyectos"
+            variants={itemVariants}
+            className="mt-10 inline-flex items-center gap-2 px-6 py-3 border border-teal-500/50 text-teal-300 font-mono text-sm uppercase tracking-widest hover:bg-teal-500/10 hover:border-teal-400 transition-colors pointer-events-auto"
+          >
+            {t('hero.cta')}
+          </motion.a>
         </motion.div>
       </div>
 
