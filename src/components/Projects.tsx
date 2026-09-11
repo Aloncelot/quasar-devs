@@ -75,7 +75,8 @@ const ProjectStar = ({ data, position, index, t, color }: any) => {
                     opacity={0.9}
                     blending={THREE.AdditiveBlending}
                     depthWrite={false}
-                />
+                    toneMapped={false}
+            />
             </sprite>
 
             {/* Estrella Única: Núcleo sólido diminuto */}
