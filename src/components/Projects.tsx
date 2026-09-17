@@ -237,10 +237,10 @@ export const Projects = () => {
         {
             id: 3,
             title: t('projects.p3_title'),
-            tech: "THREE.JS + R3F",
+            tech: "Docker + AWS + Typescript",
             description: t('projects.p3_desc'),
             color: "#8b5cf6",
-            url: "#",
+            url: "https://quasar-logistic.vercel.app/",
             icon: <FaCube />
         },
         {

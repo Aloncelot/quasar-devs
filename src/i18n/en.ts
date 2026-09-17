@@ -31,9 +31,9 @@ export const en = {
         coming_soon: "COMING SOON",
         p1_title: "COST ESTIMATOR",
         p1_desc: "Construction cost estimation system with a real-time database.",
-        p2_title: "NUTRITION PRO",
+        p2_title: "NUTRITION JV",
         p2_desc: "Platform for nutritionists with patient and diet tracking.",
-        p3_title: "QUASAR DEVS",
+        p3_title: "LOGISTIC API",
         p3_desc: "Immersive portfolio with particle effects and custom shaders.",
         p4_title: "COACH DIEGO",
         p4_desc: "AI-powered personal training assistant."
