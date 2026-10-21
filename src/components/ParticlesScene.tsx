@@ -149,7 +149,7 @@ const JetStream = ({ animate }: { animate: boolean }) => {
         <group>
             {[1, -1].map((side, index) => (
                 <points key={side} scale={[1, side, 1]}>
-                    <bufferGeometry ref={(geometry) => { geoms.current[index] = geometry; }}>
+                    <bufferGeometry ref={(geometry) => { geoms.current[index] = geometry as THREE.BufferGeometry | null; }}>
                         <bufferAttribute attach="attributes-position" count={positions.length / 3} args={[positions, 3]} />
                     </bufferGeometry>
                     <pointsMaterial

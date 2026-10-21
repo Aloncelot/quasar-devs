@@ -89,7 +89,7 @@ const WarpField = () => {
     return (
         <group rotation={[0.2, 0, 0]}>
             {layers.map((layer, i) => (
-                <points key={i} ref={(el) => { layerRefs.current[i] = el; }}>
+                <points key={i} ref={(el) => { layerRefs.current[i] = el as THREE.Points | null; }}>
                     <bufferGeometry>
                         <bufferAttribute attach="attributes-position" count={POINTS_PER_LAYER} args={[layer.positions, 3]} />
                         <bufferAttribute attach="attributes-color" count={POINTS_PER_LAYER} args={[layer.colors, 3]} />
