@@ -3,61 +3,39 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaBars, FaTimes } from 'react-icons/fa';
-import Link from 'next/link';
 import Image from 'next/image';
-import { useLanguage } from '@/context/LanguageContext';
-
-const ScanlinesOverlay = () => (
-    <div className="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[length:100%_4px,3px_100%] pointer-events-none opacity-50 z-20" />
-);
+import { useLanguage, type Language } from '@/context/LanguageContext';
+import { CyberLink } from '@/components/ui/Cyber';
 
 const LanguageToggle = () => {
-    const { lang, setLang } = useLanguage();
+    const { lang, setLang, t } = useLanguage();
+
+    const options: { code: Language; src: string; label: string }[] = [
+        { code: 'es', src: '/flag-mx.webp', label: t('nav.lang_es') },
+        { code: 'en', src: '/flag-en.png', label: t('nav.lang_en') },
+    ];
 
     return (
-        <div className="flex items-center gap-2 bg-gray-900/50 border border-teal-900/50 p-1 rounded backdrop-blur-md">
-            <span className="text-[10px] font-mono text-teal-400 tracking-widest pl-2 hidden lg:block">
-                SYS.LANG:
-            </span>
-
-            <div className="flex relative">
-                <motion.div
-                    className="absolute top-0 bottom-0 w-10 bg-teal-500/20 border border-teal-500 rounded-sm shadow-[0_0_10px_rgba(20,184,166,0.3)] z-0"
-                    initial={false}
-                    animate={{ 
-                        x: lang === 'es' ? 0 : 40
-                    }}
-                    transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                />
-
-                <button 
-                    onClick={() => setLang('es')}
-                    className="relative w-10 h-6 flex items-center justify-center z-10 overflow-hidden rounded-sm group"
-                >
-                    <Image
-                        src="/flag-mx.webp"
-                        alt="ES"
-                        fill
-                        sizes="40px"
-                        className={`object-cover transition-all duration-300 ${lang === 'es' ? 'opacity-100' : 'opacity-30 grayscale'}`}
-                    />
-                    {lang === 'es' && <ScanlinesOverlay />}
-                </button>
-
-                <button 
-                    onClick={() => setLang('en')}
-                    className="relative w-10 h-6 flex items-center justify-center z-10 overflow-hidden rounded-sm group"
-                >
-                    <Image
-                        src="/flag-en.png"
-                        alt="EN"
-                        fill
-                        sizes="40px"
-                        className={`object-cover transition-all duration-300 ${lang === 'en' ? 'opacity-100' : 'opacity-30 grayscale'}`}
-                    />
-                    {lang === 'en' && <ScanlinesOverlay />}
-                </button>
-            </div>
+        <div className="flex items-center gap-1 rounded-sm border border-violet-neon/40 bg-void/60 p-1">
+            {options.map((option) => {
+                const active = lang === option.code;
+                return (
+                    <button
+                        key={option.code}
+                        type="button"
+                        onClick={() => setLang(option.code)}
+                        aria-pressed={active}
+                        aria-label={option.label}
+                        className={`relative h-6 w-9 overflow-hidden rounded-[2px] transition-all duration-200 ${
+                            active
+                                ? 'opacity-100 ring-1 ring-cyan-neon shadow-[0_0_10px_rgba(77,235,255,0.5)]'
+                                : 'opacity-40 grayscale hover:opacity-80 hover:grayscale-0'
+                        }`}
+                    >
+                        <Image src={option.src} alt="" fill sizes="36px" className="object-cover" />
+                    </button>
+                );
+            })}
         </div>
     );
 };
@@ -65,93 +43,109 @@ const LanguageToggle = () => {
 export const Navbar = () => {
     const [isOpen, setIsOpen] = useState(false);
     const [scrolled, setScrolled] = useState(false);
-
     const { t } = useLanguage();
 
     useEffect(() => {
-        const handleScroll = () => {
-            setScrolled(window.scrollY > 50);
-        };
-        window.addEventListener('scroll', handleScroll);
+        const handleScroll = () => setScrolled(window.scrollY > 40);
+        handleScroll();
+        window.addEventListener('scroll', handleScroll, { passive: true });
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
+    // Cierra el menú móvil con Escape
+    useEffect(() => {
+        if (!isOpen) return;
+        const onKey = (event: KeyboardEvent) => {
+            if (event.key === 'Escape') setIsOpen(false);
+        };
+        window.addEventListener('keydown', onKey);
+        return () => window.removeEventListener('keydown', onKey);
+    }, [isOpen]);
+
     const navLinks = [
-        { name: t('nav.home'), href: '#' },
         { name: t('nav.services'), href: '#servicios' },
+        { name: t('nav.process'), href: '#proceso' },
         { name: t('nav.projects'), href: '#proyectos' },
         { name: t('nav.about'), href: '#sobre-mi' },
         { name: t('nav.contact'), href: '#contacto' },
     ];
 
     return (
-        <motion.nav
-            initial={{ y: -100, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.8, delay: 1, type: "spring", stiffness: 50 }}
-            className="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-6 py-4 md:px-12 backdrop-blur-md bg-black/30 border-b border-white/10"
+        <header
+            className={`fixed left-0 top-0 z-50 w-full border-b transition-colors duration-300 ${
+                scrolled || isOpen
+                    ? 'border-violet-neon/30 bg-void/80 backdrop-blur-md'
+                    : 'border-transparent bg-transparent'
+            }`}
         >
+            <nav
+                aria-label="Principal"
+                className="mx-auto flex max-w-7xl items-center justify-between gap-6 px-6 py-3 md:px-10"
+            >
+                <a href="#inicio" className="group relative flex items-center gap-2" aria-label="Quasar Devs">
+                    <span className="status-dot" aria-hidden="true" />
+                    <span className="font-gibed text-2xl tracking-[0.08em] text-white transition-colors duration-200 group-hover:text-cyan-neon">
+                        QUASAR
+                    </span>
+                </a>
 
-            <Link href="/" className="relative group">
-                <span className="font-gibed text-2xl text-white tracking-widest group-hover:text-teal-400 transition-colors duration-300">
-                    QUASAR
-                </span>
-                <span className="absolute -right-2 top-0 flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-teal-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-teal-500"></span>
-                </span>
-            </Link>
+                <div className="hidden items-center gap-8 lg:flex">
+                    {navLinks.map((link) => (
+                        <a key={link.href} href={link.href} className="nav-link">
+                            {link.name}
+                        </a>
+                    ))}
+                </div>
 
-            <div className="hidden md:flex items-center gap-8">
-                {navLinks.map((link) => (
-                    <Link key={link.name} href={link.href} className="relative group text-sm text-gray-300 hover:text-white uppercase tracking-wider transition-colors">
-                        {link.name}
-                        <span className="absolute -bottom-1 left-0 w-0 h-[1px] bg-teal-400 transition-all duration-300 group-hover:w-full" />
-                    </Link>
-                ))}
-            </div>
-
-            <div className="flex items-center gap-4">                
-                <LanguageToggle />
-                <button
-                    onClick={() => setIsOpen(!isOpen)}
-                    className="md:hidden text-teal-500 p-2 border border-teal-500/30 rounded bg-teal-500/10 active:scale-95 transition-transform"
-                >
-                    {isOpen ? <FaTimes size={20} /> : <FaBars size={20} />}
-                </button>
-            </div>
+                <div className="flex items-center gap-4">
+                    <LanguageToggle />
+                    <div className="hidden md:block">
+                        <CyberLink href="#contacto" variant="solid" className="text-sm">
+                            {t('nav.cta')}
+                        </CyberLink>
+                    </div>
+                    <button
+                        type="button"
+                        onClick={() => setIsOpen((open) => !open)}
+                        aria-expanded={isOpen}
+                        aria-controls="menu-movil"
+                        aria-label={isOpen ? t('nav.menu_close') : t('nav.menu_open')}
+                        className="rounded-sm border border-cyan-neon/40 bg-cyan-neon/10 p-2.5 text-cyan-neon transition-colors hover:bg-cyan-neon/20 lg:hidden"
+                    >
+                        {isOpen ? <FaTimes size={18} aria-hidden="true" /> : <FaBars size={18} aria-hidden="true" />}
+                    </button>
+                </div>
+            </nav>
 
             <AnimatePresence>
                 {isOpen && (
                     <motion.div
+                        id="menu-movil"
                         initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: 1, height: 'auto' }}
                         exit={{ opacity: 0, height: 0 }}
-                        className="absolute top-full left-0 w-full md:hidden bg-black/95 border-b border-teal-900/50 overflow-hidden backdrop-blur-xl"
+                        className="overflow-hidden border-t border-violet-neon/30 bg-void/95 lg:hidden"
                     >
-                        <div className="flex flex-col items-center py-8 gap-6">
-                            {navLinks.map((link, i) => (
-                                <motion.div
-                                    key={link.name}
-                                    initial={{ opacity: 0, x: -20 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    transition={{ delay: i * 0.1 }}
-                                    className="w-full flex justify-center"
+                        <div className="flex flex-col gap-1 px-6 py-6">
+                            {navLinks.map((link) => (
+                                <a
+                                    key={link.href}
+                                    href={link.href}
+                                    onClick={() => setIsOpen(false)}
+                                    className="border-l-2 border-transparent px-4 py-3 font-display text-lg text-dim transition-colors hover:border-cyan-neon hover:bg-cyan-neon/5 hover:text-white"
                                 >
-                                    <Link
-                                        href={link.href}
-                                        onClick={() => setIsOpen(false)}
-                                        className="text-lg font-mono text-gray-300 hover:text-teal-400 tracking-widest w-full text-center py-2 border-l-2 border-transparent hover:border-teal-500 hover:bg-teal-500/10 transition-all flex justify-center items-center"
-                                    >
-                                        {link.name}
-                                    </Link>
-                                </motion.div>
+                                    {link.name}
+                                </a>
                             ))}
+                            <div className="mt-4 md:hidden">
+                                <CyberLink href="#contacto" variant="solid" className="w-full">
+                                    {t('nav.cta')}
+                                </CyberLink>
+                            </div>
                         </div>
                     </motion.div>
                 )}
             </AnimatePresence>
-
-        </motion.nav>
+        </header>
     );
 };

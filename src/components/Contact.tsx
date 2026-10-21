@@ -1,266 +1,320 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { FaGithub, FaLinkedin, FaEnvelope, FaMapMarkerAlt, FaTerminal } from 'react-icons/fa';
-import { BiErrorAlt } from "react-icons/bi";
+import { useState, useRef, type FormEvent, type ReactNode } from 'react';
+import {
+    FaGithub, FaLinkedin, FaEnvelope, FaMapMarkerAlt, FaWhatsapp, FaCalendarCheck, FaCopy, FaCheck,
+} from 'react-icons/fa';
 import emailjs from '@emailjs/browser';
-
 import { useLanguage } from '@/context/LanguageContext';
+import { CyberCard, CyberButton } from '@/components/ui/Cyber';
+import { EMAIL, GITHUB_URL, LINKEDIN_URL, BOOKING_URL, WHATSAPP, EMAILJS } from '@/lib/config';
 
-const useScrambleText = (targetText: string, duration: number, trigger: boolean) => {
-    const [displayText, setDisplayText] = useState(targetText);
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%&[]{}<>';
-    useEffect(() => {
-        if (!trigger) { setDisplayText(targetText); return; }
-        let startTime: number | null = null;
-        let animationFrameId: number;
-        const animate = (timestamp: number) => {
-            if (!startTime) startTime = timestamp;
-            const progress = timestamp - startTime;
-            const ratio = Math.min(progress / duration, 1);
-            const solvedCount = Math.floor(ratio * targetText.length);
-            let result = '';
-            for (let i = 0; i < targetText.length; i++) {
-                if (i < solvedCount) result += targetText[i];
-                else result += chars[Math.floor(Math.random() * chars.length)];
-            }
-            setDisplayText(result);
-            if (progress < duration) animationFrameId = requestAnimationFrame(animate);
-            else setDisplayText(targetText);
-        };
-        animationFrameId = requestAnimationFrame(animate);
-        return () => cancelAnimationFrame(animationFrameId);
-    }, [trigger, targetText, duration]);
-    return displayText;
-};
+const MAX = { name: 80, email: 120, message: 2000 } as const;
+const COOLDOWN_MS = 30_000;
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-const TerminalError = ({ message }: { message: string }) => (
-    <motion.div
-        initial={{ opacity: 0, height: 0, y: -10 }}
-        animate={{ opacity: 1, height: 'auto', y: 0 }}
-        exit={{ opacity: 0, height: 0, y: -10 }}
-        className="mt-2 relative overflow-hidden bg-red-950/30 border-l-2 border-red-600/50 p-2 text-red-500 font-mono text-xs flex items-center gap-2"
+type Status = 'idle' | 'sending' | 'sent' | 'error';
+type FieldErrors = Partial<Record<'name' | 'email' | 'message', boolean>>;
+
+const PROJECT_TYPES = ['software', 'supply', 'both', 'other'] as const;
+
+const ContactLink = ({ href, icon, children }: { href: string; icon: ReactNode; children: ReactNode }) => (
+    <a
+        href={href}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="group inline-flex items-center gap-3 text-dim transition-colors hover:text-cyan-neon"
     >
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(50,0,0,0.1)_50%,transparent_50%)] bg-[length:100%_2px] pointer-events-none opacity-50" />
-        <BiErrorAlt className="text-lg shrink-0" />
-        <span>&gt; ERROR: {message} <span className="animate-pulse">_</span></span>
-    </motion.div>
-);
-
-const ScanlinesOverlay = () => (
-    <div className="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[length:100%_4px,3px_100%] pointer-events-none opacity-60" />
+        <span className="text-xl text-cyan-neon" aria-hidden="true">{icon}</span>
+        <span className="font-display text-lg font-medium text-ink group-hover:text-cyan-neon">{children}</span>
+    </a>
 );
 
 export const Contact = () => {
     const { t } = useLanguage();
 
-    const [formStatus, setFormStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
+    const [status, setStatus] = useState<Status>('idle');
+    const [errors, setErrors] = useState<FieldErrors>({});
+    const [errorText, setErrorText] = useState('');
     const [copied, setCopied] = useState(false);
-    const [errors, setErrors] = useState<{ [key: string]: boolean }>({});
+    const lastSent = useRef(0);
 
-    const form = useRef<HTMLFormElement>(null);
-    const nameRef = useRef<HTMLInputElement>(null);
-    const emailRef = useRef<HTMLInputElement>(null);
-    const messageRef = useRef<HTMLTextAreaElement>(null);
-
-    const emailStr = process.env.NEXT_PUBLIC_EMAIL || "aloncelot@gmail.com";
-    const githubUrl = process.env.NEXT_PUBLIC_GITHUB_URL || "https://github.com/Aloncelot";
-    const linkedinUrl = process.env.NEXT_PUBLIC_LINKEDIN_URL || "https://www.linkedin.com/in/alonso-correap/";
-
-    const sendingText = useScrambleText(t('contact.btn_sending'), 2000, formStatus === 'sending');
-
-    const copyEmail = () => {
-        navigator.clipboard.writeText(emailStr);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
+    const copyEmail = async () => {
+        try {
+            await navigator.clipboard.writeText(EMAIL);
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
+        } catch {
+            window.location.href = `mailto:${EMAIL}`;
+        }
     };
 
-    const validateForm = () => {
-        const newErrors: { [key: string]: boolean } = {};
-        let isValid = true;
-        if (!nameRef.current?.value.trim()) { newErrors.name = true; isValid = false; }
-        if (!emailRef.current?.value.trim()) { newErrors.email = true; isValid = false; }
-        if (!messageRef.current?.value.trim()) { newErrors.message = true; isValid = false; }
-        setErrors(newErrors);
-        return isValid;
+    const clearError = (field: keyof FieldErrors) => {
+        if (errors[field]) setErrors((prev) => ({ ...prev, [field]: false }));
     };
 
-    const clearError = (field: string) => {
-        if (errors[field]) setErrors(prev => ({ ...prev, [field]: false }));
+    const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        if (status === 'sending' || status === 'sent') return;
+
+        const form = event.currentTarget;
+        const data = new FormData(form);
+        const name = String(data.get('user_name') ?? '').trim().slice(0, MAX.name);
+        const email = String(data.get('user_email') ?? '').trim().slice(0, MAX.email);
+        const message = String(data.get('message') ?? '').trim().slice(0, MAX.message);
+        const typeKey = String(data.get('project_type') ?? 'software');
+        const honeypot = String(data.get('company') ?? '');
+
+        const nextErrors: FieldErrors = {};
+        if (!name) nextErrors.name = true;
+        if (!EMAIL_RE.test(email)) nextErrors.email = true;
+        if (!message) nextErrors.message = true;
+        setErrors(nextErrors);
+
+        const firstInvalid = (['name', 'email', 'message'] as const).find((field) => nextErrors[field]);
+        if (firstInvalid) {
+            const fieldName = { name: 'user_name', email: 'user_email', message: 'message' }[firstInvalid];
+            form.querySelector<HTMLElement>(`[name="${fieldName}"]`)?.focus();
+            return;
+        }
+
+        // Campo trampa: los bots lo rellenan, las personas no lo ven. Se simula éxito sin enviar nada.
+        if (honeypot) {
+            setStatus('sent');
+            form.reset();
+            setTimeout(() => setStatus('idle'), 6000);
+            return;
+        }
+
+        if (Date.now() - lastSent.current < COOLDOWN_MS) {
+            setErrorText(t('contact.err_wait'));
+            setStatus('error');
+            setTimeout(() => setStatus('idle'), 5000);
+            return;
+        }
+
+        const { serviceId, templateId, publicKey } = EMAILJS;
+        if (!serviceId || !templateId || !publicKey) {
+            setErrorText(t('contact.err_text'));
+            setStatus('error');
+            setTimeout(() => setStatus('idle'), 5000);
+            return;
+        }
+
+        const typeLabel = t(`contact.type_${PROJECT_TYPES.includes(typeKey as (typeof PROJECT_TYPES)[number]) ? typeKey : 'other'}`);
+
+        setStatus('sending');
+        setErrorText('');
+        try {
+            await emailjs.send(
+                serviceId,
+                templateId,
+                {
+                    user_name: name,
+                    user_email: email,
+                    project_type: typeLabel,
+                    // El tipo de proyecto también va dentro del mensaje para que llegue aunque la plantilla no tenga {{project_type}}
+                    message: `[${typeLabel}]\n\n${message}`,
+                },
+                { publicKey }
+            );
+            lastSent.current = Date.now();
+            setStatus('sent');
+            form.reset();
+            setTimeout(() => setStatus('idle'), 6000);
+        } catch {
+            setErrorText(t('contact.err_text'));
+            setStatus('error');
+            setTimeout(() => setStatus('idle'), 5000);
+        }
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!validateForm()) return;
-
-        setFormStatus('sending');
-
-        emailjs.sendForm(
-            process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID!,
-            process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID!,
-            form.current!,
-            process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY!
-        )
-            .then((result) => {
-                setFormStatus('sent');
-                if (form.current) form.current.reset();
-                // Regresa al estado inicial después de 6 segundos
-                setTimeout(() => setFormStatus('idle'), 6000);
-            }, (error) => {
-                console.error("Error sending email:", error.text);
-                setFormStatus('error');
-                setTimeout(() => setFormStatus('idle'), 5000);
-            });
-    };
+    const buttonLabel =
+        status === 'sending' ? t('contact.btn_sending')
+            : status === 'sent' ? t('contact.btn_sent')
+                : status === 'error' ? t('contact.btn_err')
+                    : t('contact.btn_idle');
 
     return (
-        <section id="contacto" className="relative w-full min-h-screen bg-black py-24 px-6 md:px-12 flex items-center justify-center overflow-hidden">
-            <div className="absolute inset-0 bg-[linear-gradient(rgba(20,20,20,0.8)_1px,transparent_1px),linear-gradient(90deg,rgba(20,20,20,0.8)_1px,transparent_1px)] bg-[size:100px_100px] pointer-events-none opacity-20" />
+        <section id="contacto" className="veil-deep relative scroll-mt-16 py-24 md:py-32">
+            <div className="mx-auto grid max-w-7xl gap-14 px-6 md:px-10 lg:grid-cols-2 lg:gap-20">
+                {/* Datos de contacto */}
+                <div className="flex flex-col justify-center">
+                    <h2 className="font-display text-4xl font-bold leading-tight text-white md:text-5xl">
+                        {t('contact.title')}
+                    </h2>
+                    <p className="mt-5 max-w-lg text-lg leading-relaxed text-dim">{t('contact.desc')}</p>
 
-            <div className="max-w-5xl w-full grid grid-cols-1 lg:grid-cols-2 gap-16 relative z-10">
-                <motion.div
-                    initial={{ opacity: 0, x: -50 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    viewport={{ once: true }}
-                    className="flex flex-col justify-center space-y-8"
-                >
-                    <div>
-                        <h2 className="font-gibed text-4xl md:text-5xl text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-teal-600 mb-2">
-                            {t('contact.title')}
-                        </h2>
-                        <p className="text-gray-400 font-mono text-sm tracking-widest">
-                            {t('contact.subtitle')}
-                        </p>
-                    </div>
-
-                    <p className="text-gray-300 leading-relaxed text-lg">
-                        {t('contact.desc')}
-                    </p>
-
-                    <div className="space-y-6 font-mono text-sm">
-                        <div className="group cursor-pointer" onClick={copyEmail}>
-                            <div className="flex items-center gap-4 text-gray-400 group-hover:text-teal-400 transition-colors">
-                                <div className="relative p-3 bg-gray-900 border border-gray-800 rounded overflow-hidden hover-ignition transition-none">
-                                    <ScanlinesOverlay />
-                                    <FaEnvelope size={20} className="relative z-10" />
-                                </div>
-                                <div className="flex flex-col">
-                                    <span className="text-xs text-gray-600">{t('contact.comms')}</span>
-                                    <span className="text-lg tracking-wider">{emailStr}</span>
-                                </div>
-                                {copied && (
-                                    <motion.span initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} className="text-teal-400 text-xs border border-teal-500 px-2 py-0.5">{t('contact.copied')}</motion.span>
-                                )}
-                            </div>
-                        </div>
-
-                        <div className="flex items-center gap-4 text-gray-400">
-                            <div className="p-3 bg-gray-900 border border-gray-800 rounded">
-                                <FaMapMarkerAlt size={20} />
-                            </div>
-                            <div className="flex flex-col">
-                                <span className="text-xs text-gray-600">{t('contact.base')}</span>
-                                <span className="text-lg tracking-wider">{t('contact.city')}</span>
-                            </div>
-                        </div>
-
-                        <div className="pt-4 flex gap-4">
-                            <a href={githubUrl} target="_blank" rel="noopener noreferrer" className="relative p-3 bg-gray-900 border border-gray-800 text-gray-400 rounded overflow-hidden hover-ignition transition-none">
-                                <ScanlinesOverlay />
-                                <FaGithub size={24} className="relative z-10" />
+                    <ul className="mt-10 space-y-5">
+                        <li className="flex flex-wrap items-center gap-3">
+                            <a
+                                href={`mailto:${EMAIL}`}
+                                className="group inline-flex items-center gap-3"
+                            >
+                                <span className="text-xl text-cyan-neon" aria-hidden="true"><FaEnvelope /></span>
+                                <span className="font-display text-lg font-medium text-ink group-hover:text-cyan-neon">{EMAIL}</span>
                             </a>
-                            <a href={linkedinUrl} target="_blank" rel="noopener noreferrer" className="relative p-3 bg-gray-900 border border-gray-800 text-gray-400 rounded overflow-hidden hover-ignition transition-none">
-                                <ScanlinesOverlay />
-                                <FaLinkedin size={24} className="relative z-10" />
-                            </a>
-                        </div>
-                    </div>
-                </motion.div>
-
-                <motion.div
-                    initial={{ opacity: 0, x: 50 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    viewport={{ once: true }}
-                    className="bg-gray-900/30 border border-gray-800 p-8 rounded-lg backdrop-blur-sm relative overflow-visible"
-                >
-                    <div className="absolute top-0 right-0 w-16 h-16 border-t-2 border-r-2 border-teal-500/30 rounded-tr-lg pointer-events-none" />
-                    <div className="flex items-center gap-2 mb-8 text-teal-500/50 font-mono text-xs">
-                        <FaTerminal />
-                        <span>{t('contact.terminal')}</span>
-                    </div>
-
-                    <form ref={form} onSubmit={handleSubmit} noValidate className="space-y-6">
-                        <div className="mt-2">
-                            <div className="relative group mt-6">
-                                <input ref={nameRef} name="user_name" type="text" onChange={() => clearError('name')} className={`relative z-10 w-full bg-transparent border-b pt-4 pb-2 text-white font-mono focus:outline-none transition-colors peer placeholder-transparent ${errors.name ? 'border-red-500/50 focus:border-red-500' : 'border-gray-700 focus:border-teal-500'}`} placeholder={t('contact.label_name')} />
-                                <label className={`absolute left-0 top-2 z-0 text-sm font-mono transition-all duration-300 peer-focus:-top-6 peer-focus:text-xs peer-not-placeholder-shown:-top-6 peer-not-placeholder-shown:text-xs cursor-text ${errors.name ? 'text-red-500 peer-focus:text-red-400 peer-not-placeholder-shown:text-red-400' : 'text-gray-500 peer-focus:text-teal-400 peer-not-placeholder-shown:text-teal-400'}`}>{t('contact.label_name')}</label>
-                            </div>
-                            <AnimatePresence>{errors.name && <TerminalError message={t('contact.err_name')} />}</AnimatePresence>
-                        </div>
-
-                        <div className="mt-2">
-                            <div className="relative group mt-6">
-                                <input ref={emailRef} name="user_email" type="email" onChange={() => clearError('email')} className={`relative z-10 w-full bg-transparent border-b pt-4 pb-2 text-white font-mono focus:outline-none transition-colors peer placeholder-transparent ${errors.email ? 'border-red-500/50 focus:border-red-500' : 'border-gray-700 focus:border-teal-500'}`} placeholder={t('contact.label_email')} />
-                                <label className={`absolute left-0 top-2 z-0 text-sm font-mono transition-all duration-300 peer-focus:-top-6 peer-focus:text-xs peer-not-placeholder-shown:-top-6 peer-not-placeholder-shown:text-xs cursor-text ${errors.email ? 'text-red-500 peer-focus:text-red-400 peer-not-placeholder-shown:text-red-400' : 'text-gray-500 peer-focus:text-teal-400 peer-not-placeholder-shown:text-teal-400'}`}>{t('contact.label_email')}</label>
-                            </div>
-                            <AnimatePresence>{errors.email && <TerminalError message={t('contact.err_email')} />}</AnimatePresence>
-                        </div>
-
-                        <div className="mt-2">
-                            <div className="relative group mt-6">
-                                <textarea ref={messageRef} name="message" rows={4} onChange={() => clearError('message')} className={`relative z-10 w-full bg-transparent border-b pt-4 pb-2 text-white font-mono focus:outline-none transition-colors peer resize-none placeholder-transparent ${errors.message ? 'border-red-500/50 focus:border-red-500' : 'border-gray-700 focus:border-teal-500'}`} placeholder={t('contact.label_msg')}></textarea>
-                                <label className={`absolute left-0 top-2 z-0 text-sm font-mono transition-all duration-300 peer-focus:-top-6 peer-focus:text-xs peer-not-placeholder-shown:-top-6 peer-not-placeholder-shown:text-xs cursor-text ${errors.message ? 'text-red-500 peer-focus:text-red-400 peer-not-placeholder-shown:text-red-400' : 'text-gray-500 peer-focus:text-teal-400 peer-not-placeholder-shown:text-teal-400'}`}>{t('contact.label_msg')}</label>
-                            </div>
-                            <AnimatePresence>{errors.message && <TerminalError message={t('contact.err_msg')} />}</AnimatePresence>
-                        </div>
-
-                        <button
-                            type="submit"
-                            disabled={formStatus === 'sending' || formStatus === 'sent'}
-                            className="w-full py-4 mt-8 bg-teal-500/10 border border-teal-500 text-teal-400 font-gibed tracking-widest disabled:opacity-50 disabled:cursor-not-allowed relative overflow-hidden group hover-ignition transition-none"
-                        >
-                            <ScanlinesOverlay />
-                            <span className="relative z-10 flex items-center justify-center w-full h-full">
-                                {formStatus === 'idle' && t('contact.btn_idle')}
-                                {formStatus === 'sending' && <span className="font-mono text-sm tracking-normal text-teal-200">[{sendingText}]</span>}
-                                {formStatus === 'sent' && t('contact.btn_sent')}
-                                {formStatus === 'error' && <span className="text-red-500 font-mono">{t('contact.btn_err')}</span>}
-                            </span>
-                        </button>
-
-                        <AnimatePresence>
-                            {formStatus === 'sent' && (
-                                <motion.div 
-                                    initial={{ opacity: 0, scale: 0.9, y: 10 }} 
-                                    animate={{ 
-                                        opacity: 1, 
-                                        scale: 1, 
-                                        y: 0,
-                                        textShadow: [
-                                            "0 0 0px #22d3ee",
-                                            "0 0 15px #22d3ee",
-                                            "0 0 0px #22d3ee"
-                                        ] 
-                                    }} 
-                                    exit={{ opacity: 0, scale: 0.9 }}
-                                    className="mt-6 p-4 border-2 border-cyan-500 bg-cyan-950/20 text-cyan-400 font-mono text-sm text-center rounded-lg backdrop-blur-md relative overflow-hidden"
+                            <button
+                                type="button"
+                                onClick={copyEmail}
+                                aria-label={t('contact.copy')}
+                                className="inline-flex items-center gap-2 rounded-sm border border-violet-neon/40 px-2.5 py-1 text-sm text-dim transition-colors hover:border-cyan-neon hover:text-cyan-neon"
+                            >
+                                {copied ? <FaCheck aria-hidden="true" /> : <FaCopy aria-hidden="true" />}
+                                <span aria-live="polite">{copied ? t('contact.copied') : t('contact.copy')}</span>
+                            </button>
+                        </li>
+                        {WHATSAPP && (
+                            <li>
+                                <ContactLink href={`https://wa.me/${WHATSAPP}`} icon={<FaWhatsapp />}>
+                                    {t('contact.whatsapp')}
+                                </ContactLink>
+                            </li>
+                        )}
+                        {BOOKING_URL && (
+                            <li>
+                                <ContactLink href={BOOKING_URL} icon={<FaCalendarCheck />}>
+                                    {t('contact.booking')}
+                                </ContactLink>
+                            </li>
+                        )}
+                        <li className="flex items-center gap-3 text-dim">
+                            <span className="text-xl text-cyan-neon" aria-hidden="true"><FaMapMarkerAlt /></span>
+                            <span className="font-display text-lg font-medium text-ink">{t('contact.city')}</span>
+                        </li>
+                        <li className="flex gap-3 pt-2">
+                            {GITHUB_URL && (
+                                <a
+                                    href={GITHUB_URL}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    aria-label={t('contact.github')}
+                                    className="rounded-sm border border-violet-neon/40 p-3 text-xl text-dim transition-colors hover:border-cyan-neon hover:text-cyan-neon"
                                 >
-                                    <div className="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(0,255,255,0.06),rgba(0,255,255,0.02),rgba(0,255,255,0.06))] bg-[length:100%_2px,2px_100%] pointer-events-none opacity-30" />
-                                    
-                                    <div className="relative z-10 flex flex-col items-center gap-2">
-                                        <span className="text-xs opacity-50 tracking-[0.3em]">SYSTEM NOTIFICATION</span>
-                                        <span className="font-bold tracking-[0.2em] text-lg uppercase">
-                                            {t('contact.btn_sent')}
-                                        </span>
-                                        <div className="w-full h-[1px] bg-cyan-500/30 mt-2" />
-                                        <span className="text-[10px] opacity-70 uppercase tracking-widest">Data packet received by central command</span>
-                                    </div>
-                                </motion.div>
+                                    <FaGithub aria-hidden="true" />
+                                </a>
                             )}
-                        </AnimatePresence>
+                            {LINKEDIN_URL && (
+                                <a
+                                    href={LINKEDIN_URL}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    aria-label={t('contact.linkedin')}
+                                    className="rounded-sm border border-violet-neon/40 p-3 text-xl text-dim transition-colors hover:border-cyan-neon hover:text-cyan-neon"
+                                >
+                                    <FaLinkedin aria-hidden="true" />
+                                </a>
+                            )}
+                        </li>
+                    </ul>
+                </div>
+
+                {/* Formulario */}
+                <CyberCard accent="cyan" bodyClassName="!p-6 md:!p-8">
+                    <form onSubmit={handleSubmit} noValidate className="block space-y-5">
+                        <h3 className="font-display text-2xl font-semibold text-white">{t('contact.form_title')}</h3>
+
+                        {/* Campo trampa anti-spam (oculto a personas y lectores de pantalla) */}
+                        <div aria-hidden="true" className="absolute -left-[9999px] h-0 w-0 overflow-hidden">
+                            <label htmlFor="company">Company</label>
+                            <input id="company" name="company" type="text" tabIndex={-1} autoComplete="off" />
+                        </div>
+
+                        <div>
+                            <label htmlFor="user_name" className="mb-2 block font-display text-sm font-medium text-dim">
+                                {t('contact.label_name')}
+                            </label>
+                            <input
+                                id="user_name"
+                                name="user_name"
+                                type="text"
+                                autoComplete="name"
+                                maxLength={MAX.name}
+                                placeholder={t('contact.ph_name')}
+                                onChange={() => clearError('name')}
+                                aria-invalid={errors.name ? 'true' : 'false'}
+                                aria-describedby={errors.name ? 'err-name' : undefined}
+                                className="field"
+                            />
+                            {errors.name && <p id="err-name" role="alert" className="mt-2 text-sm text-magenta-neon">{t('contact.err_name')}</p>}
+                        </div>
+
+                        <div>
+                            <label htmlFor="user_email" className="mb-2 block font-display text-sm font-medium text-dim">
+                                {t('contact.label_email')}
+                            </label>
+                            <input
+                                id="user_email"
+                                name="user_email"
+                                type="email"
+                                inputMode="email"
+                                autoComplete="email"
+                                maxLength={MAX.email}
+                                placeholder={t('contact.ph_email')}
+                                onChange={() => clearError('email')}
+                                aria-invalid={errors.email ? 'true' : 'false'}
+                                aria-describedby={errors.email ? 'err-email' : undefined}
+                                className="field"
+                            />
+                            {errors.email && <p id="err-email" role="alert" className="mt-2 text-sm text-magenta-neon">{t('contact.err_email')}</p>}
+                        </div>
+
+                        <div>
+                            <label htmlFor="project_type" className="mb-2 block font-display text-sm font-medium text-dim">
+                                {t('contact.label_type')}
+                            </label>
+                            <select id="project_type" name="project_type" defaultValue="software" className="field">
+                                {PROJECT_TYPES.map((type) => (
+                                    <option key={type} value={type}>{t(`contact.type_${type}`)}</option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <div>
+                            <label htmlFor="message" className="mb-2 block font-display text-sm font-medium text-dim">
+                                {t('contact.label_msg')}
+                            </label>
+                            <textarea
+                                id="message"
+                                name="message"
+                                rows={5}
+                                maxLength={MAX.message}
+                                placeholder={t('contact.ph_msg')}
+                                onChange={() => clearError('message')}
+                                aria-invalid={errors.message ? 'true' : 'false'}
+                                aria-describedby={errors.message ? 'err-message' : undefined}
+                                className="field resize-y"
+                            />
+                            {errors.message && <p id="err-message" role="alert" className="mt-2 text-sm text-magenta-neon">{t('contact.err_msg')}</p>}
+                        </div>
+
+                        <div className="flex flex-wrap items-center gap-4 pt-1">
+                            <CyberButton
+                                type="submit"
+                                variant="solid"
+                                accent={status === 'error' ? 'magenta' : 'cyan'}
+                                disabled={status === 'sending' || status === 'sent'}
+                            >
+                                {buttonLabel}
+                            </CyberButton>
+                            <p className="text-sm text-dim">{t('contact.privacy')}</p>
+                        </div>
+
+                        <div role="status" aria-live="polite">
+                            {status === 'sent' && (
+                                <div className="border-l-2 border-cyan-neon bg-cyan-neon/10 p-4">
+                                    <p className="font-display text-lg font-semibold text-cyan-neon">{t('contact.sent_title')}</p>
+                                    <p className="mt-1 text-sm text-ink/90">{t('contact.sent_text')}</p>
+                                </div>
+                            )}
+                            {status === 'error' && (
+                                <div className="border-l-2 border-magenta-neon bg-magenta-neon/10 p-4">
+                                    <p className="text-sm text-ink/90">{errorText}</p>
+                                </div>
+                            )}
+                        </div>
                     </form>
-                </motion.div>
+                </CyberCard>
             </div>
         </section>
     );

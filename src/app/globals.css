@@ -2,126 +2,450 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ------------------------------------------------------------------
+   QUASAR DEVS · tokens
+   Paleta cyberpunk: vacío espacial + neón cian / azul / violeta / magenta
+------------------------------------------------------------------- */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --void: #060414;
+  --panel: #0d0a26;
+  --panel-2: #130f36;
+  --cyan: #4debff;
+  --azure: #3c8dff;
+  --violet: #8a63ff;
+  --magenta: #e055ff;
+  --ink: #e9ecff;
+  --dim: #9ca3d9;
+}
+
+html {
+  color-scheme: dark;
+  scroll-behavior: smooth;
+  scroll-padding-top: 5rem;
 }
 
 body {
-  color: var(--foreground);
-  background: var(--background);
+  background: var(--void);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
 }
 
-/* Animación de vibración y distorsión */
-@keyframes glitch-shake {
-  0% {
-    transform: translate(0);
+::selection {
+  background: rgba(224, 85, 255, 0.35);
+  color: #fff;
+}
+
+/* Foco visible para teclado en todo elemento interactivo */
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 3px;
+}
+
+/* ------------------------------------------------------------------
+   Brillo suave al hover: se enciende con un fundido y luego "respira"
+   (sube y baja de intensidad lentamente). Sin parpadeos.
+------------------------------------------------------------------- */
+@keyframes glow-on {
+  from { filter: drop-shadow(0 0 0 transparent); }
+  to   { filter: drop-shadow(0 0 9px color-mix(in srgb, var(--c) 55%, transparent)); }
+}
+
+@keyframes glow-breathe {
+  0%, 100% { filter: drop-shadow(0 0 8px color-mix(in srgb, var(--c) 45%, transparent)); }
+  50%      { filter: drop-shadow(0 0 20px color-mix(in srgb, var(--c) 95%, transparent)); }
+}
+
+@keyframes scan-sweep {
+  from { background-position: 0 -100%, 0 0, 0 0; }
+  to   { background-position: 0 220%, 0 0, 0 0; }
+}
+
+@keyframes fab-pulse {
+  0%        { transform: scale(1);   opacity: 0.55; }
+  40%, 100% { transform: scale(2.1); opacity: 0; }
+}
+
+@keyframes neon-boot {
+  0%, 15% { opacity: 0; }
+  16%     { opacity: 1; }
+  24%     { opacity: 0.2; }
+  32%     { opacity: 1; }
+  44%     { opacity: 0.45; }
+  52%, 100% { opacity: 1; }
+}
+
+@keyframes dot-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: 0.4; transform: scale(0.8); }
+}
+
+/* ------------------------------------------------------------------
+   Tarjeta cyberpunk (esquinas cortadas, borde neón)
+   Estructura:  .cyber-card > .cyber-card__face > .cyber-card__body
+   El glow vive en .cyber-card (drop-shadow) porque clip-path recorta
+   cualquier sombra aplicada sobre el mismo elemento.
+------------------------------------------------------------------- */
+@layer components {
+  .cyber-card {
+    --c: var(--cyan);
+    --c2: var(--magenta);
+    --cut: 18px;
+    position: relative;
+    display: block;
+    color: inherit;
+    text-decoration: none;
+  }
+  .cyber-card--magenta { --c: var(--magenta); --c2: var(--cyan); }
+  .cyber-card--violet  { --c: var(--violet);  --c2: var(--cyan); }
+  .cyber-card--azure   { --c: var(--azure);   --c2: var(--magenta); }
+
+  .cyber-card__face {
+    position: relative;
+    isolation: isolate;
+    height: 100%;
+    padding: 1px;
+    background: color-mix(in srgb, var(--c) 42%, transparent);
+    clip-path: polygon(
+      var(--cut) 0, 100% 0, 100% calc(100% - var(--cut)),
+      calc(100% - var(--cut)) 100%, 0 100%, 0 var(--cut)
+    );
+    transition: background 0.2s;
+  }
+  .cyber-card__face::before {
+    content: "";
+    position: absolute;
+    inset: 1px;
+    z-index: -1;
+    background:
+      radial-gradient(120% 90% at 0% 0%, color-mix(in srgb, var(--c) 14%, transparent), transparent 60%),
+      linear-gradient(160deg, var(--panel-2), var(--panel));
+    clip-path: polygon(
+      var(--cut) 0, 100% 0, 100% calc(100% - var(--cut)),
+      calc(100% - var(--cut)) 100%, 0 100%, 0 var(--cut)
+    );
+  }
+  .cyber-card__body {
+    position: relative;
+    height: 100%;
+    padding: 1.5rem;
   }
 
-  20% {
-    transform: translate(-2px, 2px);
+  .cyber-card:is(:hover, :focus-visible, :focus-within) {
+    animation:
+      glow-on 0.5s ease-out both,
+      glow-breathe 2.6s ease-in-out 0.5s infinite;
+  }
+  .cyber-card:is(:hover, :focus-visible, :focus-within) > .cyber-card__face {
+    background: var(--c);
   }
 
-  40% {
-    transform: translate(-2px, -2px);
+  /* ----------------------------------------------------------------
+     Botón cyberpunk
+     Estructura:  .cyber-btn > .cyber-btn__face > (contenido)
+  ----------------------------------------------------------------- */
+  .cyber-btn {
+    --c: var(--cyan);
+    --c2: var(--magenta);
+    --cut: 12px;
+    position: relative;
+    display: inline-flex;
+    border: 0;
+    padding: 0;
+    background: none;
+    color: var(--ink);
+    font: inherit;
+    text-decoration: none;
+    cursor: pointer;
+  }
+  .cyber-btn--magenta { --c: var(--magenta); --c2: var(--cyan); }
+
+  .cyber-btn__face {
+    position: relative;
+    isolation: isolate;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    min-height: 3rem;
+    padding: 0.8rem 1.6rem;
+    font-family: var(--font-display, "Chakra Petch"), sans-serif;
+    font-weight: 600;
+    font-size: 1rem;
+    line-height: 1.1;
+    letter-spacing: 0.02em;
+    background: var(--c);
+    clip-path: polygon(
+      var(--cut) 0, 100% 0, 100% calc(100% - var(--cut)),
+      calc(100% - var(--cut)) 100%, 0 100%, 0 var(--cut)
+    );
+    transition: background 0.3s;
+  }
+  .cyber-btn__face::before {
+    content: "";
+    position: absolute;
+    inset: 1px;
+    z-index: -1;
+    background: color-mix(in srgb, var(--panel) 85%, var(--c));
+    clip-path: polygon(
+      var(--cut) 0, 100% 0, 100% calc(100% - var(--cut)),
+      calc(100% - var(--cut)) 100%, 0 100%, 0 var(--cut)
+    );
   }
 
-  60% {
-    transform: translate(2px, 2px);
+  .cyber-btn > .cyber-btn__face {
+    flex: 1 1 auto;
   }
 
-  80% {
-    transform: translate(2px, -2px);
+  /* ----------------------------------------------------------------
+     Scanlines en tarjetas y botones
+     La capa vive entre el fondo (::before) y el contenido: ambos
+     pseudo-elementos usan z-index -1 dentro de un contexto aislado, y
+     ::after se pinta después de ::before. El texto queda siempre por
+     delante, así que las líneas no lo distorsionan.
+  ----------------------------------------------------------------- */
+  .cyber-card {
+    --scan-line: color-mix(in srgb, var(--c) 10%, transparent);
+    --scan-glow: color-mix(in srgb, var(--c) 16%, transparent);
+  }
+  .cyber-btn {
+    --scan-line: rgba(255, 255, 255, 0.07);
+    --scan-glow: color-mix(in srgb, var(--c) 22%, transparent);
+  }
+  .cyber-btn--solid {
+    --scan-line: rgba(0, 0, 0, 0.2);
+    --scan-glow: rgba(255, 255, 255, 0.28);
   }
 
-  100% {
-    transform: translate(0);
+  .cyber-card__face::after,
+  .cyber-btn__face::after {
+    content: "";
+    position: absolute;
+    inset: 1px;
+    z-index: -1;
+    pointer-events: none;
+    background:
+      linear-gradient(180deg, transparent 0%, var(--scan-glow) 50%, transparent 100%) 0 -100% / 100% 35% no-repeat,
+      repeating-linear-gradient(180deg, var(--scan-line) 0 1px, transparent 1px 3px),
+      linear-gradient(90deg, rgba(255, 0, 0, 0.04), rgba(0, 255, 0, 0.015), rgba(0, 0, 255, 0.04)) 0 0 / 3px 100%;
+    clip-path: polygon(
+      var(--cut) 0, 100% 0, 100% calc(100% - var(--cut)),
+      calc(100% - var(--cut)) 100%, 0 100%, 0 var(--cut)
+    );
+  }
+
+  /* Al hover, una banda de luz recorre las scanlines lentamente */
+  .cyber-card:is(:hover, :focus-visible, :focus-within) > .cyber-card__face::after,
+  .cyber-btn:is(:hover, :focus-visible):not(:disabled) > .cyber-btn__face::after {
+    animation: scan-sweep 3.2s linear infinite;
+  }
+
+  /* Variante hexagonal (botón flotante) */
+  .cyber-btn--hex > .cyber-btn__face,
+  .cyber-btn--hex > .cyber-btn__face::before,
+  .cyber-btn--hex > .cyber-btn__face::after {
+    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  }
+  .cyber-btn--hex > .cyber-btn__face {
+    width: 3.75rem;
+    height: 3.75rem;
+    min-height: 0;
+    padding: 0;
+    font-size: 1.5rem;
+  }
+
+  /* Scanlines sobre el botón flotante (líneas finas + banda de barrido lenta) */
+  .cyber-btn--hex {
+    --scan-line: rgba(0, 0, 0, 0.32);
+    --scan-glow: rgba(255, 255, 255, 0.3);
+  }
+  .cyber-btn--hex > .cyber-btn__face::after {
+    animation: scan-sweep 3.2s linear infinite;
+  }
+
+  /* Anillo de pulso que sale del botón cada cierto tiempo */
+  .fab-pulse {
+    position: absolute;
+    inset: 0;
+    width: 3.75rem;
+    height: 3.75rem;
+    background: var(--magenta);
+    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+    pointer-events: none;
+    animation: fab-pulse 4.5s ease-out infinite;
+  }
+
+  .cyber-btn--solid .cyber-btn__face {
+    color: #031018;
+  }
+  .cyber-btn--solid .cyber-btn__face::before {
+    background: linear-gradient(135deg, var(--cyan), var(--azure));
+  }
+  .cyber-btn--solid.cyber-btn--magenta .cyber-btn__face::before {
+    background: linear-gradient(135deg, var(--magenta), var(--violet));
+  }
+
+  .cyber-btn:is(:hover, :focus-visible):not(:disabled):not([aria-disabled="true"]) {
+    animation:
+      glow-on 0.5s ease-out both,
+      glow-breathe 2.6s ease-in-out 0.5s infinite;
+  }
+  .cyber-btn:is(:hover, :focus-visible):not(:disabled):not([aria-disabled="true"]) > .cyber-btn__face {
+    background: color-mix(in srgb, var(--c) 100%, white 25%);
+  }
+  .cyber-btn:disabled,
+  .cyber-btn[aria-disabled="true"] {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+
+  /* ----------------------------------------------------------------
+     Enlace de navegación con subrayado parpadeante
+  ----------------------------------------------------------------- */
+  .nav-link {
+    position: relative;
+    padding: 0.4rem 0;
+    font-family: var(--font-display, "Chakra Petch"), sans-serif;
+    font-weight: 500;
+    font-size: 0.95rem;
+    letter-spacing: 0.02em;
+    color: var(--dim);
+    transition: color 0.2s;
+  }
+  .nav-link::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: -2px;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(90deg, var(--cyan), var(--magenta));
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.25s ease-out;
+  }
+  .nav-link:is(:hover, :focus-visible) {
+    color: #fff;
+  }
+  .nav-link:is(:hover, :focus-visible)::after {
+    transform: scaleX(1);
+    box-shadow: 0 0 10px var(--cyan);
+  }
+
+  /* Etiquetas de tecnología */
+  .chip {
+    --c: var(--cyan);
+    display: inline-block;
+    padding: 0.2rem 0.65rem;
+    font-family: var(--font-display, "Chakra Petch"), sans-serif;
+    font-size: 0.8rem;
+    font-weight: 500;
+    line-height: 1.3;
+    color: color-mix(in srgb, var(--c) 80%, white);
+    background: color-mix(in srgb, var(--c) 9%, transparent);
+    border: 1px solid color-mix(in srgb, var(--c) 32%, transparent);
+    border-radius: 2px;
+  }
+  .chip--magenta { --c: var(--magenta); }
+  .chip--violet  { --c: var(--violet); }
+
+  /* Campos de formulario */
+  .field {
+    width: 100%;
+    padding: 0.85rem 1rem;
+    color: var(--ink);
+    font-family: var(--font-body, "IBM Plex Sans"), sans-serif;
+    font-size: 1rem;
+    background: rgba(6, 4, 20, 0.75);
+    border: 1px solid rgba(138, 99, 255, 0.45);
+    border-radius: 2px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .field::placeholder { color: rgba(156, 163, 217, 0.55); }
+  .field:hover { border-color: rgba(77, 235, 255, 0.55); }
+  .field:focus {
+    outline: none;
+    border-color: var(--cyan);
+    box-shadow: 0 0 0 3px rgba(77, 235, 255, 0.22);
+  }
+  .field[aria-invalid="true"] {
+    border-color: var(--magenta);
+    box-shadow: 0 0 0 3px rgba(224, 85, 255, 0.18);
+  }
+
+  /* Velo translúcido sobre el campo de estrellas fijo */
+  .veil {
+    background: linear-gradient(180deg, rgba(6, 4, 20, 0.62), rgba(6, 4, 20, 0.84));
+  }
+  .veil-deep {
+    background: linear-gradient(180deg, rgba(6, 4, 20, 0.84), rgba(10, 6, 32, 0.9));
+  }
+
+  /* Wordmark del hero: se enciende como un letrero de neón */
+  .wordmark {
+    font-family: var(--font-gibed), sans-serif;
+    background: linear-gradient(180deg, #ffffff 0%, #c4f8ff 40%, var(--cyan) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    filter:
+      drop-shadow(3px 0 0 rgba(224, 85, 255, 0.55))
+      drop-shadow(-3px 0 0 rgba(77, 235, 255, 0.3));
+    animation: neon-boot 2s steps(1, end) 0.2s both;
+  }
+
+  /* Retrato con duotono neón; al hover recupera el color */
+  .duotone {
+    position: relative;
+  }
+  .duotone img {
+    filter: grayscale(1) contrast(1.15) brightness(0.9);
+    transition: filter 0.3s;
+  }
+  .duotone::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(145deg, rgba(138, 99, 255, 0.85), rgba(77, 235, 255, 0.6));
+    mix-blend-mode: color;
+    pointer-events: none;
+    transition: opacity 0.3s;
+  }
+  .cyber-card:is(:hover, :focus-within) .duotone::after {
+    opacity: 0.55;
+  }
+
+  .status-dot {
+    display: inline-block;
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 9999px;
+    background: var(--cyan);
+    box-shadow: 0 0 8px var(--cyan);
+    animation: dot-pulse 1.8s ease-in-out infinite;
   }
 }
 
-/* Animación de parpadeo de color */
-@keyframes glitch-flash {
-  0% {
-    background-color: rgba(20, 184, 166, 0.1);
-    border-color: #14b8a6;
-    color: #2dd4bf;
+/* ------------------------------------------------------------------
+   Movimiento reducido: sin parpadeos; se conserva el brillo estático
+------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+
+  .wordmark,
+  .status-dot,
+  .fab-pulse,
+  .cyber-btn--hex > .cyber-btn__face::after,
+  .cyber-card:is(:hover, :focus-visible, :focus-within) > .cyber-card__face::after,
+  .cyber-btn:is(:hover, :focus-visible) > .cyber-btn__face::after,
+  .cyber-card:is(:hover, :focus-visible, :focus-within),
+  .cyber-btn:is(:hover, :focus-visible) {
+    animation: none !important;
   }
 
-  50% {
-    background-color: rgba(255, 255, 255, 0.1);
-    border-color: #ffffff;
-    color: #ffffff;
+  .fab-pulse { display: none; }
+
+  .cyber-card:is(:hover, :focus-visible, :focus-within),
+  .cyber-btn:is(:hover, :focus-visible) {
+    filter: drop-shadow(0 0 12px color-mix(in srgb, var(--c) 70%, transparent));
   }
-
-  100% {
-    background-color: rgba(20, 184, 166, 0.1);
-    border-color: #14b8a6;
-    color: #2dd4bf;
-  }
-}
-
-/* CLASE MAESTRA: Aplícala al botón */
-.terminal-button:hover {
-  /* Ejecuta ambas animaciones al mismo tiempo */
-  animation: glitch-shake 0.2s cubic-bezier(.36, .07, .19, .97) both infinite,
-    glitch-flash 0.1s steps(2) infinite;
-
-  /* Efecto de sombra de texto tipo 3D rojo/azul */
-  text-shadow: 2px 0 rgba(255, 0, 0, 0.7), -2px 0 rgba(0, 255, 255, 0.7);
-}
-
-@keyframes ignition {
-  0% {
-    opacity: 0.5;
-    border-color: rgba(20, 184, 166, 0.2);
-    box-shadow: none;
-    color: #6b7280;
-  }
-
-  /* Apagado */
-  10% {
-    opacity: 1;
-    border-color: rgba(20, 184, 166, 0.8);
-    box-shadow: 0 0 10px rgba(20, 184, 166, 0.5);
-    color: #2dd4bf;
-  }
-
-  /* Flash */
-  20% {
-    opacity: 0.5;
-    border-color: rgba(20, 184, 166, 0.2);
-    box-shadow: none;
-    color: #6b7280;
-  }
-
-  /* Apagado */
-  30% {
-    opacity: 1;
-    border-color: rgba(20, 184, 166, 0.8);
-    box-shadow: 0 0 10px rgba(20, 184, 166, 0.5);
-    color: #2dd4bf;
-  }
-
-  /* Flash */
-  40% {
-    opacity: 0.6;
-    border-color: rgba(20, 184, 166, 0.2);
-    box-shadow: none;
-  }
-
-  /* Casi Apagado */
-  100% {
-    opacity: 1;
-    border-color: rgba(20, 184, 166, 1);
-    box-shadow: 0 0 15px rgba(20, 184, 166, 0.4);
-    background-color: rgba(20, 184, 166, 0.1);
-    color: #2dd4bf;
-  }
-
-  /* Encendido Estable */
-}
-
-/* Clase para aplicar la animación */
-.hover-ignition:hover {
-  animation: ignition 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
 }

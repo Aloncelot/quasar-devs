@@ -1,43 +1,96 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
+import { Chakra_Petch, IBM_Plex_Sans } from "next/font/google";
 import "./globals.css";
 import { Navbar } from "@/components/Navbar";
+import { CookieBanner } from "@/components/CookieBanner";
 import { LanguageProvider } from "@/context/LanguageContext";
+import { es } from "@/i18n/es";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+// Next.js descarga estas fuentes al compilar y las sirve desde tu propio dominio (sin peticiones a Google).
+const display = Chakra_Petch({
   subsets: ["latin"],
+  weight: ["500", "600", "700"],
+  variable: "--font-display",
+  display: "swap",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const body = IBM_Plex_Sans({
   subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  variable: "--font-body",
+  display: "swap",
 });
 
+// Wordmark de la marca. Solo tiene mayúsculas sin acentos: úsese únicamente para "QUASAR DEVS".
 const gibed = localFont({
-  src: "/fonts/Gibed.otf",
+  src: "./fonts/Gibed.otf",
   variable: "--font-gibed",
   display: "swap",
 });
 
-export const metadata = {
-  title: 'QUASAR DEVS | System Architect',
-  description: 'Portafolio profesional de Alonso Correa',
-  icons: {
-    icon: '/favicon.ico',
-    shortcut: '/favicon.ico',
-    apple: '/favicon.ico',
+export const metadata: Metadata = {
+  title: es.meta.title,
+  description: es.meta.description,
+  applicationName: "Quasar Devs",
+  authors: [{ name: "Alonso Correa" }],
+  keywords: [
+    "desarrollo web", "desarrollo full stack", "chatbots con IA", "RAG",
+    "consultoría supply chain", "layout de almacén", "diseño de CEDIS", "cross dock",
+    "implementación WMS", "sorter", "conveyors", "AS/RS", "CDMX", "México",
+  ],
+  openGraph: {
+    type: "website",
+    locale: "es_MX",
+    siteName: "Quasar Devs",
+    title: es.meta.title,
+    description: es.meta.description,
   },
+  twitter: { card: "summary_large_image", title: es.meta.title, description: es.meta.description },
+  icons: {
+    icon: "/favicon.ico",
+    shortcut: "/favicon.ico",
+    apple: "/apple-touch-icon.png",
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#060414",
+  colorScheme: "dark",
+};
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "ProfessionalService",
+  name: "Quasar Devs",
+  description: es.meta.description,
+  areaServed: "MX",
+  address: { "@type": "PostalAddress", addressLocality: "Ciudad de México", addressCountry: "MX" },
+  founder: { "@type": "Person", name: "Alonso Correa" },
+  knowsAbout: [
+    "Desarrollo web", "Backend", "Full stack", "Chatbots", "Supply chain",
+    "Layouts de almacén", "WMS", "Sorters y conveyors", "AS/RS",
+  ],
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="es" className="scroll-smooth">
-      <body className="bg-black text-white selection:bg-teal-500/30">
+    <html lang="es" className={`${gibed.variable} ${display.variable} ${body.variable}`}>
+      <body className="bg-void font-body text-ink">
+        <a
+          href="#contenido"
+          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:bg-void focus:px-4 focus:py-2 focus:text-cyan-neon"
+        >
+          Saltar al contenido
+        </a>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
         <LanguageProvider>
           <Navbar />
           {children}
+          <CookieBanner />
         </LanguageProvider>
       </body>
     </html>

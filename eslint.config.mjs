@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Respaldo del código anterior al rediseño (se puede borrar)
+    "_backup_pre_rediseno/**",
   ]),
 ]);
 

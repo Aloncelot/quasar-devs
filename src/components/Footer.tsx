@@ -1,14 +1,17 @@
 'use client';
 
-import { useRef, useMemo } from 'react';
+import { useRef, useMemo, useEffect, useState } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
+import { useReducedMotion } from 'framer-motion';
 import * as THREE from 'three';
 import { FaArrowUp, FaReact } from 'react-icons/fa';
 import { SiNextdotjs, SiTailwindcss, SiTypescript } from 'react-icons/si';
+import { useLanguage } from '@/context/LanguageContext';
 
-// --- 1. FUNCIÓN DE TEXTURA ---
-const useCircleTexture = () => {
-    const texture = useMemo(() => {
+const YEAR = new Date().getFullYear();
+
+const useCircleTexture = () =>
+    useMemo(() => {
         const canvas = document.createElement('canvas');
         canvas.width = 64;
         canvas.height = 64;
@@ -25,91 +28,71 @@ const useCircleTexture = () => {
         tex.needsUpdate = true;
         return tex;
     }, []);
-    return texture;
-}
 
-// --- 2. COMPONENTE WARPFIELD (CORREGIDO) ---
+const FIELD_WIDTH = 40;
+const BOUNDARY_LEFT = -20;
+const NUM_LAYERS = 4;
+const POINTS_PER_LAYER = 150;
+
+/** Campo de estrellas en movimiento horizontal (sensación de velocidad de crucero). */
 const WarpField = () => {
     const circleTex = useCircleTexture();
-    const colorInside = new THREE.Color('#ff6030'); // Naranja Quasar
-    const colorOutside = new THREE.Color('#1b3984'); // Azul Profundo
 
-    const numLayers = 4;
-    const pointsPerLayer = 150;
-
-    // El ancho total del campo es 40 (de -20 a 20)
-    const FIELD_WIDTH = 40;
-    const BOUNDARY_LEFT = -20;
-
-    // Generamos los datos de las partículas
     const layers = useMemo(() => {
-        const layerData = [];
-        for (let l = 0; l < numLayers; l++) {
-            const positions = new Float32Array(pointsPerLayer * 3);
-            const colors = new Float32Array(pointsPerLayer * 3);
-
-            const depthFactor = l / (numLayers - 1);
+        const colorInside = new THREE.Color('#ff4fe8');
+        const colorOutside = new THREE.Color('#3c8dff');
+        const data = [];
+        for (let l = 0; l < NUM_LAYERS; l++) {
+            const positions = new Float32Array(POINTS_PER_LAYER * 3);
+            const colors = new Float32Array(POINTS_PER_LAYER * 3);
+            const depthFactor = l / (NUM_LAYERS - 1);
             const zPos = 2 - depthFactor * 10;
             const speed = 0.05 * (1 - depthFactor * 0.5);
 
-            for (let i = 0; i < pointsPerLayer; i++) {
+            for (let i = 0; i < POINTS_PER_LAYER; i++) {
                 const i3 = i * 3;
-                positions[i3] = (Math.random() - 0.5) * FIELD_WIDTH; // X: -20 a 20
-                positions[i3 + 1] = (Math.random() - 0.5) * 6;      // Y: Altura reducida
-                positions[i3 + 2] = zPos;                            // Z: Profundidad
+                positions[i3] = (Math.random() - 0.5) * FIELD_WIDTH;
+                positions[i3 + 1] = (Math.random() - 0.5) * 6;
+                positions[i3 + 2] = zPos;
 
-                const mixedColor = colorInside.clone().lerp(colorOutside, Math.random());
-                mixedColor.multiplyScalar(1 - depthFactor * 0.8);
-
-                colors[i3] = mixedColor.r;
-                colors[i3 + 1] = mixedColor.g;
-                colors[i3 + 2] = mixedColor.b;
+                const mixed = colorInside.clone().lerp(colorOutside, Math.random());
+                mixed.multiplyScalar(1 - depthFactor * 0.8);
+                colors[i3] = mixed.r;
+                colors[i3 + 1] = mixed.g;
+                colors[i3 + 2] = mixed.b;
             }
-            layerData.push({ positions, colors, speed });
+            data.push({ positions, colors, speed });
         }
-        return layerData;
+        return data;
     }, []);
 
-    const layerRefs = useRef<any[]>([]);
+    const layerRefs = useRef<(THREE.Points | null)[]>([]);
 
     useFrame((state, delta) => {
-        // FIX 1: Limitar el delta para evitar saltos temporales grandes
         const safeDelta = Math.min(delta, 0.1);
-
-        layerRefs.current.forEach((mesh, i) => {
-            if (!mesh) return;
+        layerRefs.current.forEach((points, i) => {
+            if (!points) return;
             const { speed } = layers[i];
-            const positionAttribute = mesh.geometry.getAttribute('position');
-            const posArray = positionAttribute.array as Float32Array;
+            const attribute = points.geometry.getAttribute('position');
+            const array = attribute.array as Float32Array;
 
-            for (let j = 0; j < pointsPerLayer; j++) {
-                const i3 = j * 3;
-
-                // Movimiento horizontal usando safeDelta
-                posArray[i3] -= speed * 20 * safeDelta;
-
-                // Ondulación Vertical
-                posArray[i3 + 1] += Math.sin(state.clock.elapsedTime * 1.5 + posArray[i3] * 0.3) * 0.005;
-
-                // FIX 2: Loop Infinito Suave
-                // Si se pasa del límite izquierdo (-20), le sumamos el ancho total (40).
-                // Esto lo coloca a la derecha, pero respetando cuánto se "pasó", 
-                // manteniendo la distancia relativa entre partículas.
-                if (posArray[i3] < BOUNDARY_LEFT) {
-                    posArray[i3] += FIELD_WIDTH;
-                }
+            for (let j = 0; j < POINTS_PER_LAYER; j++) {
+                const j3 = j * 3;
+                array[j3] -= speed * 20 * safeDelta;
+                array[j3 + 1] += Math.sin(state.clock.elapsedTime * 1.5 + array[j3] * 0.3) * 0.005;
+                if (array[j3] < BOUNDARY_LEFT) array[j3] += FIELD_WIDTH;
             }
-            positionAttribute.needsUpdate = true;
+            attribute.needsUpdate = true;
         });
     });
 
     return (
         <group rotation={[0.2, 0, 0]}>
             {layers.map((layer, i) => (
-                <points key={i} ref={el => (layerRefs.current[i] = el)}>
+                <points key={i} ref={(el) => { layerRefs.current[i] = el; }}>
                     <bufferGeometry>
-                        <bufferAttribute attach="attributes-position" count={pointsPerLayer} args={[layer.positions, 3]} />
-                        <bufferAttribute attach="attributes-color" count={pointsPerLayer} args={[layer.colors, 3]} />
+                        <bufferAttribute attach="attributes-position" count={POINTS_PER_LAYER} args={[layer.positions, 3]} />
+                        <bufferAttribute attach="attributes-color" count={POINTS_PER_LAYER} args={[layer.colors, 3]} />
                     </bufferGeometry>
                     <pointsMaterial
                         size={0.15}
@@ -118,7 +101,7 @@ const WarpField = () => {
                         opacity={0.9}
                         depthWrite={false}
                         blending={THREE.AdditiveBlending}
-                        vertexColors={true}
+                        vertexColors
                     />
                 </points>
             ))}
@@ -126,72 +109,83 @@ const WarpField = () => {
     );
 };
 
-// --- 3. COMPONENTE FOOTER PRINCIPAL ---
 export const Footer = () => {
+    const { t } = useLanguage();
+    const reduceMotion = useReducedMotion();
+    const footerRef = useRef<HTMLElement>(null);
+    const [visible, setVisible] = useState(false);
 
-    const scrollToTop = () => {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    };
+    // Solo anima cuando el footer está en pantalla (ahorra GPU)
+    useEffect(() => {
+        const node = footerRef.current;
+        if (!node) return;
+        const observer = new IntersectionObserver(([entry]) => setVisible(entry.isIntersecting));
+        observer.observe(node);
+        return () => observer.disconnect();
+    }, []);
+
+    const scrollToTop = () => window.scrollTo({ top: 0, behavior: reduceMotion ? 'auto' : 'smooth' });
+
+    const links = [
+        { label: t('nav.services'), href: '#servicios' },
+        { label: t('nav.projects'), href: '#proyectos' },
+        { label: t('nav.about'), href: '#sobre-mi' },
+        { label: t('nav.contact'), href: '#contacto' },
+    ];
 
     return (
-        <footer className="w-full h-[400px] md:h-[300px] bg-black border-t border-teal-900/30 relative overflow-hidden flex flex-col justify-end">
-
-            {/* FONDO ANIMADO (WARPFIELD) */}
-            <div className="absolute inset-0 z-0">
-                <Canvas camera={{ position: [0, 0, 8], fov: 45 }} gl={{ antialias: false }}>
-                    <fog attach="fog" args={['#000000', 5, 20]} />
+        <footer ref={footerRef} className="relative overflow-hidden border-t border-violet-neon/30 bg-void">
+            <div className="absolute inset-0" aria-hidden="true">
+                <Canvas
+                    camera={{ position: [0, 0, 8], fov: 45 }}
+                    gl={{ antialias: false }}
+                    dpr={[1, 1.5]}
+                    frameloop={visible && !reduceMotion ? 'always' : 'demand'}
+                >
+                    <fog attach="fog" args={['#060414', 5, 20]} />
                     <WarpField />
                 </Canvas>
-                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent pointer-events-none" />
+                <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-void via-void/60 to-void/20" />
             </div>
 
-            {/* CONTENIDO DEL FOOTER */}
-            <div className="max-w-7xl mx-auto px-6 py-12 relative z-10 w-full flex flex-col md:flex-row items-center justify-between gap-6">
-
-                {/* IZQUIERDA: Marca */}
-                <div className="text-center md:text-left">
-                    <h3 className="font-gibed text-xl text-white tracking-widest mb-2">
-                        QUASAR <span className="text-teal-500">DEVS</span>
-                    </h3>
-                    <p className="text-xs text-gray-500 font-mono">
-                        SYSTEM_VERSION: 2.0.26_BETA <br />
-                        STATUS: <span className="text-teal-500">OPERATIONAL</span>
+            <div className="relative mx-auto grid max-w-7xl gap-10 px-6 py-14 md:grid-cols-3 md:px-10">
+                <div>
+                    <p className="font-gibed text-2xl tracking-[0.08em] text-white">
+                        QUASAR <span className="text-cyan-neon">DEVS</span>
                     </p>
+                    <p className="mt-3 max-w-xs text-sm leading-relaxed text-dim">{t('footer.tagline')}</p>
                 </div>
 
-                {/* CENTRO: Stack */}
-                <div className="flex flex-col items-center gap-2">
-                    <span className="text-[10px] text-gray-600 font-mono tracking-widest uppercase">
-                        Powering this system
-                    </span>
-                    <div className="flex gap-4 text-gray-400">
-                        <SiNextdotjs className="hover:text-white transition-colors cursor-help" title="Next.js" />
-                        <FaReact className="hover:text-cyan-400 transition-colors cursor-help" title="React" />
-                        <SiTypescript className="hover:text-blue-400 transition-colors cursor-help" title="TypeScript" />
-                        <SiTailwindcss className="hover:text-teal-400 transition-colors cursor-help" title="Tailwind" />
-                    </div>
-                </div>
+                <nav aria-label="Pie de página" className="flex flex-wrap gap-x-8 gap-y-3 md:justify-center">
+                    {links.map((link) => (
+                        <a key={link.href} href={link.href} className="nav-link">
+                            {link.label}
+                        </a>
+                    ))}
+                </nav>
 
-                {/* DERECHA: Botón y Copy */}
-                <div className="flex flex-col items-center md:items-end gap-4">
+                <div className="flex flex-col gap-4 md:items-end">
                     <button
+                        type="button"
                         onClick={scrollToTop}
-                        className="group flex items-center gap-2 text-xs font-mono text-teal-500 hover:text-teal-300 transition-colors uppercase tracking-widest"
+                        className="group inline-flex items-center gap-3 font-display text-sm font-medium text-cyan-neon transition-colors hover:text-white"
                     >
-                        <span>Return to Surface</span>
-                        <div className="p-2 border border-teal-500/30 rounded bg-teal-500/5 group-hover:bg-teal-500/20 transition-all">
-                            <FaArrowUp className="group-hover:-translate-y-1 transition-transform" />
-                        </div>
+                        <span>{t('footer.top')}</span>
+                        <span className="rounded-sm border border-cyan-neon/40 bg-cyan-neon/10 p-2 transition-colors group-hover:bg-cyan-neon/25">
+                            <FaArrowUp aria-hidden="true" />
+                        </span>
                     </button>
-                    <p className="text-xs text-gray-600">
-                        © {new Date().getFullYear()} Alonso Correa. All rights reserved.
+                    <div className="flex items-center gap-3 text-dim" role="img" aria-label={t('footer.stack')}>
+                        <SiNextdotjs aria-hidden="true" />
+                        <FaReact aria-hidden="true" />
+                        <SiTypescript aria-hidden="true" />
+                        <SiTailwindcss aria-hidden="true" />
+                    </div>
+                    <p className="text-xs text-dim">
+                        © {YEAR} Alonso Correa. {t('footer.rights')}
                     </p>
                 </div>
-
             </div>
-
-            {/* Barra final decorativa */}
-            <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-teal-900/50 to-transparent z-20" />
         </footer>
     );
 };
