@@ -6,6 +6,7 @@ import { FaBars, FaTimes } from 'react-icons/fa';
 import Image from 'next/image';
 import { useLanguage, type Language } from '@/context/LanguageContext';
 import { CyberLink } from '@/components/ui/Cyber';
+import { LogoMark } from '@/components/ui/LogoMark';
 
 const LanguageToggle = () => {
     const { lang, setLang, t } = useLanguage();
@@ -83,7 +84,7 @@ export const Navbar = () => {
                 className="mx-auto flex max-w-7xl items-center justify-between gap-6 px-6 py-3 md:px-10"
             >
                 <a href="#inicio" className="group relative flex items-center gap-2" aria-label="Quasar Devs">
-                    <span className="status-dot" aria-hidden="true" />
+                    <LogoMark className="h-10 w-auto transition-[filter] duration-300 group-hover:drop-shadow-[0_0_8px_#4debff]" />
                     <span className="font-gibed text-2xl tracking-[0.08em] text-white transition-colors duration-200 group-hover:text-cyan-neon">
                         QUASAR
                     </span>

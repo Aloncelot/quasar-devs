@@ -30,6 +30,7 @@ const gibed = localFont({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://quasar-devs.vercel.app"),
   title: es.meta.title,
   description: es.meta.description,
   applicationName: "Quasar Devs",
@@ -45,10 +46,14 @@ export const metadata: Metadata = {
     siteName: "Quasar Devs",
     title: es.meta.title,
     description: es.meta.description,
+    images: [{ url: "/og.png", width: 1200, height: 630, alt: "Quasar Devs" }],
   },
-  twitter: { card: "summary_large_image", title: es.meta.title, description: es.meta.description },
+  twitter: { card: "summary_large_image", title: es.meta.title, description: es.meta.description, images: ["/og.png"] },
   icons: {
-    icon: "/favicon.ico",
+    icon: [
+      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+      { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+    ],
     shortcut: "/favicon.ico",
     apple: "/apple-touch-icon.png",
   },
