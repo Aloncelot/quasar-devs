@@ -158,7 +158,7 @@ export const Footer = () => {
                     <p className="mt-3 max-w-xs text-sm leading-relaxed text-dim">{t('footer.tagline')}</p>
                 </div>
 
-                <nav aria-label="Pie de página" className="flex flex-wrap gap-x-8 gap-y-3 md:justify-center">
+                <nav aria-label="Pie de página" className="flex flex-wrap items-center content-center gap-x-8 gap-y-3 self-center md:justify-center">
                     {links.map((link) => (
                         <a key={link.href} href={link.href} className="nav-link">
                             {link.label}
