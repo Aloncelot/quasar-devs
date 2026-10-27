@@ -7,7 +7,7 @@ import * as THREE from 'three';
 import { FaArrowUp, FaReact } from 'react-icons/fa';
 import { SiNextdotjs, SiTailwindcss, SiTypescript } from 'react-icons/si';
 import { useLanguage } from '@/context/LanguageContext';
-import { LogoMark } from '@/components/ui/LogoMark';
+import { SpinningLogo } from '@/components/ui/SpinningLogo';
 
 const YEAR = new Date().getFullYear();
 
@@ -152,7 +152,7 @@ export const Footer = () => {
             <div className="relative mx-auto grid max-w-7xl gap-10 px-6 py-14 md:grid-cols-3 md:px-10">
                 <div>
                     <p className="flex items-center gap-3 font-gibed text-2xl tracking-[0.08em] text-white">
-                        <LogoMark className="h-12 w-auto" />
+                        <SpinningLogo className="h-28" />
                         <span>QUASAR <span className="text-cyan-neon">DEVS</span></span>
                     </p>
                     <p className="mt-3 max-w-xs text-sm leading-relaxed text-dim">{t('footer.tagline')}</p>

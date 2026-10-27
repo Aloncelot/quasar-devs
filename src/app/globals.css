@@ -65,6 +65,10 @@ body {
   40%, 100% { transform: scale(2.1); opacity: 0; }
 }
 
+@keyframes qspin-rotate {
+  to { transform: rotate(-360deg); }
+}
+
 @keyframes neon-boot {
   0%, 15% { opacity: 0; }
   16%     { opacity: 1; }
@@ -237,6 +241,46 @@ body {
   .cyber-card:is(:hover, :focus-visible, :focus-within) > .cyber-card__face::after,
   .cyber-btn:is(:hover, :focus-visible):not(:disabled) > .cyber-btn__face::after {
     animation: scan-sweep 3.2s linear infinite;
+  }
+
+  /* ----------------------------------------------------------------
+     Logo con disco giratorio (solo footer)
+     Capas: disco completo · chorro + núcleo · mitad frontal del disco encima.
+     El disco se guarda "de frente" (círculo); se gira con CSS y luego se
+     aplana con scaleY para verlo inclinado, como en el logo original.
+  ----------------------------------------------------------------- */
+  .qspin {
+    position: relative;
+    display: inline-block;
+    aspect-ratio: 1254 / 1129;
+  }
+  .qspin__core {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+  .qspin__disk {
+    position: absolute;
+    left: 6.62%;
+    top: 30.03%;
+    width: 86.52%;
+    height: 38%;
+  }
+  .qspin__disk--front { clip-path: inset(50% 0 0 0); }
+  .qspin__squash {
+    position: absolute;
+    left: 0;
+    top: 50%;
+    width: 100%;
+    aspect-ratio: 434 / 437;
+    transform: translateY(-50%) scaleY(0.3929);
+  }
+  .qspin__spin {
+    display: block;
+    width: 100%;
+    height: 100%;
+    animation: qspin-rotate 3s linear infinite;
   }
 
   /* Variante hexagonal (botón flotante) */
@@ -434,6 +478,7 @@ body {
   .wordmark,
   .status-dot,
   .fab-pulse,
+  .qspin__spin,
   .cyber-btn--hex > .cyber-btn__face::after,
   .cyber-card:is(:hover, :focus-visible, :focus-within) > .cyber-card__face::after,
   .cyber-btn:is(:hover, :focus-visible) > .cyber-btn__face::after,
