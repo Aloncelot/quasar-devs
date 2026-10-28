@@ -69,6 +69,20 @@ body {
   to { transform: rotate(-360deg); }
 }
 
+@keyframes caret-blink {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0; }
+}
+
+@keyframes hero-rotate {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes thrust {
+  0%, 100% { transform: scaleY(0.6); opacity: 0.6; }
+  50%      { transform: scaleY(1); opacity: 1; }
+}
+
 @keyframes neon-boot {
   0%, 15% { opacity: 0; }
   16%     { opacity: 1; }
@@ -283,6 +297,35 @@ body {
     animation: qspin-rotate 3s linear infinite;
   }
 
+
+  /* ----------------------------------------------------------------
+     Hero "fijar destino"
+  ----------------------------------------------------------------- */
+  .hero-dest-text {
+    background: linear-gradient(90deg, var(--cyan), #b98bff 55%, var(--magenta));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .hero-caret {
+    display: inline-block;
+    width: 0.09em;
+    height: 0.85em;
+    margin-left: 0.12em;
+    vertical-align: -0.05em;
+    background: var(--cyan);
+    box-shadow: 0 0 12px var(--cyan);
+    animation: caret-blink 1.1s steps(1, end) infinite;
+  }
+  .hero-spin-slow,
+  .hero-spin-reverse {
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+  .hero-spin-slow    { animation: hero-rotate 40s linear infinite; }
+  .hero-spin-reverse { animation: hero-rotate 60s linear infinite reverse; }
+  .hero-thrust { animation: thrust 2.4s ease-in-out infinite; transform-origin: top; }
+
   /* Variante hexagonal (botón flotante) */
   .cyber-btn--hex > .cyber-btn__face,
   .cyber-btn--hex > .cyber-btn__face::before,
@@ -479,6 +522,10 @@ body {
   .status-dot,
   .fab-pulse,
   .qspin__spin,
+  .hero-caret,
+  .hero-spin-slow,
+  .hero-spin-reverse,
+  .hero-thrust,
   .cyber-btn--hex > .cyber-btn__face::after,
   .cyber-card:is(:hover, :focus-visible, :focus-within) > .cyber-card__face::after,
   .cyber-btn:is(:hover, :focus-visible) > .cyber-btn__face::after,

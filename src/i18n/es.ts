@@ -33,6 +33,13 @@ export const es = {
         route_sw_desc: "Frontend, backend, full stack y chatbots",
         route_sc_title: "Ruta supply chain",
         route_sc_desc: "Layouts, WMS, sorters, conveyors y AS/RS",
+        lead: "Llevamos tu negocio a",
+        destinations: "una app web a la medida|un CEDIS optimizado|un chatbot con IA|un WMS funcionando|un almacén con mejor layout",
+        sr_headline: "Llevamos tu negocio a una app web a la medida, un CEDIS optimizado, un chatbot con IA, un WMS funcionando o un almacén con mejor layout.",
+        locked: "QUASAR · DESTINO FIJADO",
+        route_sw_count: "4 servicios",
+        route_sc_count: "6 servicios",
+        scroll: "Desliza para despegar",
     },
 
     services: {
@@ -198,5 +205,23 @@ export const es = {
     floating: {
         label: "Cotizar proyecto",
         whatsapp: "Escribir por WhatsApp",
+    },
+
+    randall: {
+        name: "Randall",
+        role: "Asistente de Quasar Devs",
+        open: "Abrir chat con Randall, el asistente de Quasar Devs",
+        close: "Cerrar chat",
+        log: "Chat con Randall",
+        greeting: "¡Hola! Soy Randall 👋 ¿Te ayudo a explorar Quasar Devs?",
+        dismiss: "Cerrar saludo",
+        welcome: "¡Hola! Soy **Randall**, el asistente de Quasar Devs. Pregúntame por servicios, proyectos o cómo cotizar.",
+        placeholder: "Escribe tu pregunta…",
+        send: "Enviar",
+        thinking: "Randall está pensando…",
+        clear: "Nueva conversación",
+        error: "Se me cruzaron los cables ⚡ Intenta de nuevo o escríbenos en [contacto](#contacto).",
+        disclaimer: "Randall es una IA y puede equivocarse.",
+        chips: "¿Qué servicios ofrecen?|¿Hacen chatbots con IA?|Layouts de almacén y WMS|¿Cómo cotizo?",
     },
 };

@@ -1,0 +1,377 @@
+/* ==================================================================
+   Randall — asistente pixelado (esquina inferior izquierda)
+   Tamaño del avatar: 1/15 de la altura de la pantalla como máximo.
+   ================================================================== */
+
+.root {
+    --rt: #3ee0cf;          /* turquesa */
+    --rt-soft: #a8fff4;
+    --rt-deep: #0b3f3b;
+    --rt-size: calc(100vh / 15);
+    position: fixed;
+    left: 1rem;
+    bottom: 1rem;
+    z-index: 45;
+    font-family: var(--font-body), "IBM Plex Sans", system-ui, sans-serif;
+}
+
+@supports (height: 1svh) {
+    .root { --rt-size: calc(100svh / 15); }
+}
+
+/* ---------------- Avatar ---------------- */
+.avatar {
+    position: relative;
+    display: block;
+    width: var(--rt-size);
+    height: var(--rt-size);
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.sprite {
+    width: 100%;
+    height: 100%;
+    display: block;
+    overflow: visible;
+    filter: drop-shadow(0 0 6px color-mix(in srgb, var(--rt) 55%, transparent));
+    transition: filter 0.4s ease;
+}
+
+.avatar:hover .sprite,
+.avatar:focus-visible .sprite,
+.avatar[aria-expanded="true"] .sprite {
+    filter: drop-shadow(0 0 12px color-mix(in srgb, var(--rt) 90%, transparent));
+}
+
+.avatar:focus-visible {
+    outline: 2px solid var(--rt);
+    outline-offset: 4px;
+}
+
+/* Flotación por "saltos" de un píxel (look retro) */
+.float .sprite { animation: rt-float 2.4s steps(1, end) infinite; }
+.hop .sprite   { animation: rt-hop 0.55s steps(4, end); }
+.shake .sprite { animation: rt-shake 0.5s steps(6, end); }
+
+@keyframes rt-float {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-9%); }
+}
+@keyframes rt-hop {
+    0%, 100% { transform: translateY(0); }
+    40%      { transform: translateY(-27%); }
+    70%      { transform: translateY(-9%); }
+}
+@keyframes rt-shake {
+    0%, 100% { transform: translateX(0); }
+    20%, 60% { transform: translateX(-9%); }
+    40%, 80% { transform: translateX(9%); }
+}
+
+/* Luz de la antena */
+.antenna { animation: rt-antenna 1.6s ease-in-out infinite; }
+@keyframes rt-antenna {
+    0%, 100% { opacity: 1; }
+    50%      { opacity: 0.35; }
+}
+
+/* Puntos de "pensando" */
+.think {
+    position: absolute;
+    left: 78%;
+    top: -18%;
+    display: flex;
+    gap: 2px;
+}
+.think i {
+    width: calc(var(--rt-size) / 11);
+    height: calc(var(--rt-size) / 11);
+    min-width: 3px;
+    min-height: 3px;
+    background: #e055ff;
+    animation: rt-blinkdot 0.9s steps(1, end) infinite;
+}
+.think i:nth-child(2) { animation-delay: 0.3s; }
+.think i:nth-child(3) { animation-delay: 0.6s; }
+@keyframes rt-blinkdot {
+    0%, 100% { opacity: 0.2; }
+    33%      { opacity: 1; }
+}
+
+/* Zzz cuando duerme */
+.zzz {
+    position: absolute;
+    left: 80%;
+    top: -22%;
+    font: 700 calc(var(--rt-size) * 0.26) / 1 var(--font-display), monospace;
+    color: #8a63ff;
+    text-shadow: 0 0 6px #8a63ff;
+    animation: rt-zzz 2.4s steps(4, end) infinite;
+    pointer-events: none;
+}
+.zzz span { font-size: 0.75em; margin-left: 1px; vertical-align: super; }
+@keyframes rt-zzz {
+    0%   { transform: translateY(0); opacity: 0; }
+    25%  { opacity: 1; }
+    100% { transform: translateY(-60%); opacity: 0; }
+}
+
+/* ---------------- Globo de saludo ---------------- */
+.bubble {
+    position: absolute;
+    left: calc(var(--rt-size) + 0.6rem);
+    bottom: calc(var(--rt-size) * 0.35);
+    display: flex;
+    align-items: flex-start;
+    width: max-content;
+    max-width: min(15rem, calc(100vw - var(--rt-size) - 3rem));
+    border: 2px solid var(--rt);
+    background: #0d0a26;
+    box-shadow: 0 0 14px color-mix(in srgb, var(--rt) 40%, transparent), 4px 4px 0 var(--rt-deep);
+    transform-origin: left bottom;
+    animation: rt-pop 0.25s steps(3, end);
+}
+.bubble::before {
+    content: "";
+    position: absolute;
+    left: -8px;
+    bottom: 8px;
+    width: 8px;
+    height: 8px;
+    background: var(--rt);
+    clip-path: polygon(100% 0, 0 50%, 100% 100%);
+}
+.bubbleText {
+    padding: 0.55rem 0.4rem 0.55rem 0.7rem;
+    text-align: left;
+    font-size: 0.8rem;
+    line-height: 1.35;
+    color: #e9ecff;
+    background: none;
+    border: 0;
+    cursor: pointer;
+}
+.bubbleClose {
+    padding: 0.4rem;
+    color: #9ca3d9;
+    background: none;
+    border: 0;
+    cursor: pointer;
+}
+.bubbleClose:hover, .bubbleText:hover { color: var(--rt-soft); }
+
+@keyframes rt-pop {
+    from { transform: scale(0.6); opacity: 0; }
+    to   { transform: scale(1); opacity: 1; }
+}
+
+/* ---------------- Panel de chat ---------------- */
+.panel {
+    --cut: 14px;
+    position: absolute;
+    left: 0;
+    bottom: calc(var(--rt-size) + 0.75rem);
+    width: min(22rem, calc(100vw - 2rem));
+    height: min(31rem, calc(100vh - var(--rt-size) - 6rem));
+    /* El brillo va en el contenedor porque clip-path recorta los filtros */
+    filter: drop-shadow(0 0 16px color-mix(in srgb, var(--rt) 35%, transparent));
+    transform-origin: left bottom;
+    animation: rt-open 0.22s steps(4, end);
+}
+.frame {
+    height: 100%;
+    padding: 1.5px;
+    background: color-mix(in srgb, var(--rt) 70%, transparent);
+    clip-path: polygon(0 0, calc(100% - var(--cut)) 0, 100% var(--cut), 100% 100%, var(--cut) 100%, 0 calc(100% - var(--cut)));
+}
+@keyframes rt-open {
+    from { transform: scale(0.4); opacity: 0; }
+    to   { transform: scale(1); opacity: 1; }
+}
+
+.panelInner {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background:
+        radial-gradient(120% 70% at 0% 0%, color-mix(in srgb, var(--rt) 12%, transparent), transparent 60%),
+        linear-gradient(160deg, #130f36, #0d0a26);
+    clip-path: inherit;
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.7rem 0.8rem;
+    border-bottom: 1px solid color-mix(in srgb, var(--rt) 30%, transparent);
+    background-image: repeating-linear-gradient(0deg, transparent 0 3px, color-mix(in srgb, var(--rt) 5%, transparent) 3px 4px);
+}
+.headerSprite { width: 2.1rem; height: 2.1rem; flex: none; }
+.headerText { flex: 1; min-width: 0; }
+.name {
+    margin: 0;
+    font: 700 1rem/1.1 var(--font-display), sans-serif;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--rt);
+    text-shadow: 0 0 8px color-mix(in srgb, var(--rt) 60%, transparent);
+}
+.role {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin: 0.15rem 0 0;
+    font-size: 0.72rem;
+    color: #9ca3d9;
+}
+.statusDot {
+    width: 6px;
+    height: 6px;
+    background: #4ade80;
+    box-shadow: 0 0 6px #4ade80;
+}
+
+.iconBtn {
+    display: grid;
+    place-items: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    border: 1px solid color-mix(in srgb, var(--rt) 35%, transparent);
+    background: transparent;
+    color: #9ca3d9;
+    cursor: pointer;
+    transition: color 0.2s, border-color 0.2s, box-shadow 0.3s;
+}
+.iconBtn:hover, .iconBtn:focus-visible {
+    color: var(--rt);
+    border-color: var(--rt);
+    box-shadow: 0 0 10px color-mix(in srgb, var(--rt) 45%, transparent);
+    outline: none;
+}
+
+/* Mensajes */
+.log {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0.9rem 0.8rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in srgb, var(--rt) 40%, transparent) transparent;
+}
+
+.msg {
+    max-width: 88%;
+    padding: 0.55rem 0.75rem;
+    font-size: 0.85rem;
+    line-height: 1.5;
+    color: #e9ecff;
+    overflow-wrap: anywhere;
+}
+.msg p { margin: 0; }
+.msg p + p, .msg p + ul, .msg ul + p { margin-top: 0.4rem; }
+.msg ul { margin: 0.2rem 0 0; padding-left: 1rem; list-style: square; }
+.msg li::marker { color: var(--rt); }
+
+.bot {
+    align-self: flex-start;
+    background: color-mix(in srgb, var(--rt) 9%, #0d0a26);
+    border-left: 3px solid var(--rt);
+}
+.user {
+    align-self: flex-end;
+    background: color-mix(in srgb, #8a63ff 22%, #0d0a26);
+    border-right: 3px solid #e055ff;
+}
+
+.link {
+    color: var(--rt);
+    text-decoration: underline;
+    text-decoration-style: dotted;
+    text-underline-offset: 3px;
+}
+.link:hover { color: var(--rt-soft); text-decoration-style: solid; }
+
+.dots { display: flex; gap: 4px; padding: 0.75rem; }
+.dots span {
+    width: 6px;
+    height: 6px;
+    background: var(--rt);
+    animation: rt-blinkdot 0.9s steps(1, end) infinite;
+}
+.dots span:nth-child(2) { animation-delay: 0.3s; }
+.dots span:nth-child(3) { animation-delay: 0.6s; }
+
+.chips { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.2rem; }
+.chip {
+    padding: 0.35rem 0.6rem;
+    font-size: 0.75rem;
+    color: var(--rt-soft);
+    background: transparent;
+    border: 1px solid color-mix(in srgb, var(--rt) 45%, transparent);
+    cursor: pointer;
+    transition: border-color 0.3s, box-shadow 0.4s, color 0.3s;
+}
+.chip:hover, .chip:focus-visible {
+    color: #fff;
+    border-color: var(--rt);
+    box-shadow: 0 0 10px color-mix(in srgb, var(--rt) 50%, transparent);
+    outline: none;
+}
+
+/* Formulario */
+.form {
+    display: flex;
+    gap: 0.5rem;
+    padding: 0.7rem 0.8rem 0.3rem;
+    border-top: 1px solid color-mix(in srgb, var(--rt) 30%, transparent);
+}
+.input {
+    flex: 1;
+    min-width: 0;
+    padding: 0.55rem 0.7rem;
+    font-size: 16px; /* evita zoom automático en iOS */
+    color: #e9ecff;
+    background: #060414;
+    border: 1px solid color-mix(in srgb, var(--rt) 35%, transparent);
+    transition: border-color 0.2s, box-shadow 0.3s;
+}
+.input::placeholder { color: #6b72a8; }
+.input:focus {
+    outline: none;
+    border-color: var(--rt);
+    box-shadow: 0 0 10px color-mix(in srgb, var(--rt) 35%, transparent);
+}
+.send {
+    display: grid;
+    place-items: center;
+    width: 2.6rem;
+    flex: none;
+    color: #060414;
+    background: var(--rt);
+    border: 0;
+    cursor: pointer;
+    clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px));
+    transition: filter 0.3s, opacity 0.2s;
+}
+.send:hover:not(:disabled), .send:focus-visible { filter: brightness(1.15) drop-shadow(0 0 6px var(--rt)); outline: none; }
+.send:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.disclaimer {
+    margin: 0;
+    padding: 0.2rem 0.8rem 0.6rem;
+    font-size: 0.65rem;
+    color: #6b72a8;
+    text-align: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .float .sprite, .hop .sprite, .shake .sprite, .antenna,
+    .panel, .bubble, .zzz { animation: none; }
+}

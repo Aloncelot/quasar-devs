@@ -18,6 +18,18 @@ export const BOOKING_URL = safeHttps(process.env.NEXT_PUBLIC_BOOKING_URL);
 /** Opcional: número de WhatsApp con lada país, solo dígitos (ej. 5215512345678). */
 export const WHATSAPP = (process.env.NEXT_PUBLIC_WHATSAPP || '').replace(/\D/g, '');
 
+/**
+ * URL del backend de Randall (chatbot en Python). En desarrollo usa http://localhost:8000 por defecto.
+ * Solo acepta https (o http en localhost). Si falta en producción, Randall no se muestra.
+ */
+const safeApi = (value: string | undefined) =>
+    value && (/^https:\/\//i.test(value) || /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?\/?$/i.test(value))
+        ? value.replace(/\/+$/, '')
+        : undefined;
+export const RANDALL_API_URL =
+    safeApi(process.env.NEXT_PUBLIC_RANDALL_API_URL) ??
+    (process.env.NODE_ENV === 'development' ? 'http://localhost:8000' : undefined);
+
 export const EMAILJS = {
     serviceId: process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID,
     templateId: process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID,

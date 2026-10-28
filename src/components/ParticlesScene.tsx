@@ -184,15 +184,34 @@ const Core = () => (
  * El viaje espacial: al hacer scroll la cámara se acerca al núcleo del quasar
  * y la galaxia gira, de modo que cada sección se siente como otro tramo del trayecto.
  */
+/** Desplazamiento del quasar en pantalla durante el Hero (fracción del ancho/alto del viewport). */
+export const HERO_CORE_SHIFT = { desktopX: 0.18, mobileY: 0.2 } as const;
+
 const CameraRig = ({ progress, animate }: { progress: RefObject<number>; animate: boolean }) => {
-    const { camera } = useThree();
+    const { camera, size } = useThree();
     const target = useMemo(() => new THREE.Vector3(), []);
+    const offset = useRef<{ x: number; y: number } | null>(null);
 
     useFrame((_, delta) => {
         const p = animate ? progress.current : 0;
         target.set(8 - 5.5 * p, 10 - 7.5 * p, 12 - 8 * p);
         easing.damp3(camera.position, target, 0.5, delta);
         camera.lookAt(0, 0, 0);
+
+        // En el Hero, el núcleo se corre a la derecha (escritorio) o hacia arriba (móvil)
+        // para dejar espacio al texto; al bajar de la primera pantalla vuelve al centro.
+        const heroFade = 1 - Math.min(window.scrollY / Math.max(window.innerHeight, 1), 1);
+        const tx = size.width >= 1024 ? HERO_CORE_SHIFT.desktopX * size.width * heroFade : 0;
+        const ty = size.width < 768 ? HERO_CORE_SHIFT.mobileY * size.height * heroFade : 0;
+        if (!offset.current || !animate) offset.current = { x: tx, y: ty };
+        else {
+            const k = 1 - Math.exp(-delta * 6);
+            offset.current.x += (tx - offset.current.x) * k;
+            offset.current.y += (ty - offset.current.y) * k;
+        }
+        (camera as THREE.PerspectiveCamera).setViewOffset(
+            size.width, size.height, -offset.current.x, offset.current.y, size.width, size.height
+        );
     });
     return null;
 };

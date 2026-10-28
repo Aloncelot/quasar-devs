@@ -31,6 +31,13 @@ export const en: typeof es = {
         route_sw_desc: "Frontend, backend, full stack and chatbots",
         route_sc_title: "Supply chain route",
         route_sc_desc: "Layouts, WMS, sorters, conveyors and AS/RS",
+        lead: "We take your business to",
+        destinations: "a custom web app|an optimized DC|an AI chatbot|a running WMS|a better warehouse layout",
+        sr_headline: "We take your business to a custom web app, an optimized distribution center, an AI chatbot, a running WMS or a better warehouse layout.",
+        locked: "QUASAR · DESTINATION LOCKED",
+        route_sw_count: "4 services",
+        route_sc_count: "6 services",
+        scroll: "Scroll to launch",
     },
 
     services: {
@@ -196,5 +203,23 @@ export const en: typeof es = {
     floating: {
         label: "Get a quote",
         whatsapp: "Message on WhatsApp",
+    },
+
+    randall: {
+        name: "Randall",
+        role: "Quasar Devs assistant",
+        open: "Open chat with Randall, the Quasar Devs assistant",
+        close: "Close chat",
+        log: "Chat with Randall",
+        greeting: "Hi! I'm Randall 👋 Can I help you explore Quasar Devs?",
+        dismiss: "Dismiss greeting",
+        welcome: "Hi! I'm **Randall**, Quasar Devs' assistant. Ask me about services, projects or how to get a quote.",
+        placeholder: "Type your question…",
+        send: "Send",
+        thinking: "Randall is thinking…",
+        clear: "New conversation",
+        error: "My wires got crossed ⚡ Try again or write to us in [contact](#contacto).",
+        disclaimer: "Randall is an AI and can make mistakes.",
+        chips: "What services do you offer?|Do you build AI chatbots?|Warehouse layouts and WMS|How do I get a quote?",
     },
 };

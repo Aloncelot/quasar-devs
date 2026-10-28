@@ -47,7 +47,7 @@ export const CookieBanner = () => {
         <div
             role="region"
             aria-label={t('cookies.label')}
-            className="fixed bottom-4 left-4 right-24 z-40 max-w-sm sm:right-auto"
+            className="fixed bottom-[calc(100vh/15_+_1.75rem)] left-4 right-24 z-40 max-w-sm sm:right-auto"
         >
             <CyberCard accent="violet" bodyClassName="!p-4 pr-11">
                 <p className="text-sm leading-relaxed text-ink/90">{t('cookies.text')}</p>

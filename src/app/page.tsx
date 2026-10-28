@@ -7,6 +7,7 @@ import { About } from '@/components/About';
 import { Contact } from '@/components/Contact';
 import { Footer } from '@/components/Footer';
 import { FloatingLink } from '@/components/FloatingLink';
+import { RandallLazy } from '@/components/randall/RandallLazy';
 
 export default function Home() {
   return (
@@ -23,6 +24,8 @@ export default function Home() {
       </main>
       <Footer />
       <FloatingLink />
+      {/* Randall: asistente pixelado (esquina inferior izquierda) */}
+      <RandallLazy />
     </>
   );
 }

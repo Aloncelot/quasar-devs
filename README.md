@@ -30,6 +30,14 @@ Edita `src/i18n/es.ts` y `en.ts`. Las etiquetas de tecnología son listas separa
 
 Todo vive en `globals.css` (`edge-ignite`, `glow-ignite`, ...). Es una ráfaga de ~0.7 s y después un pulso lento (< 1 Hz); con `prefers-reduced-motion` queda un brillo estático. Mantén esa regla: parpadeos de más de 3 por segundo pueden provocar molestias o crisis en personas fotosensibles (WCAG 2.3.1).
 
+## Randall (chatbot)
+
+Avatar pixelado turquesa en la esquina inferior izquierda (`src/components/randall/`). Responde con la información de la landing usando el backend en Python `D:\4 Python\randall-api`.
+
+- Local: corre la API (`uvicorn app.main:app --reload --port 8000`) y `npm run dev`; el sitio la usa en `http://localhost:8000` automáticamente.
+- Producción: despliega la API y agrega `NEXT_PUBLIC_RANDALL_API_URL=https://...` en Vercel. Sin esa variable, Randall no se muestra.
+- Expresiones y dibujo: `sprite.ts` (rejilla de 11×11). Textos: clave `randall` en `src/i18n/es.ts` y `en.ts`.
+
 ## Seguridad
 
 - `next.config.ts` agrega cabeceras: CSP (solo en producción), HSTS, `X-Frame-Options`, `nosniff`, `Referrer-Policy`, `Permissions-Policy`. Si agregas servicios externos (analítica, mapas, fuentes remotas), añade su dominio a `connect-src`/`script-src`.
