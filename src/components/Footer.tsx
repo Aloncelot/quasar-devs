@@ -4,6 +4,7 @@ import { useRef, useMemo, useEffect, useState } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { useReducedMotion } from 'framer-motion';
 import * as THREE from 'three';
+import { createRandom } from '@/lib/random';
 import { FaArrowUp, FaReact } from 'react-icons/fa';
 import { SiNextdotjs, SiTailwindcss, SiTypescript } from 'react-icons/si';
 import { useLanguage } from '@/context/LanguageContext';
@@ -40,6 +41,7 @@ const WarpField = () => {
     const circleTex = useCircleTexture();
 
     const layers = useMemo(() => {
+        const rand = createRandom(7);
         const colorInside = new THREE.Color('#ff4fe8');
         const colorOutside = new THREE.Color('#3c8dff');
         const data = [];
@@ -52,11 +54,11 @@ const WarpField = () => {
 
             for (let i = 0; i < POINTS_PER_LAYER; i++) {
                 const i3 = i * 3;
-                positions[i3] = (Math.random() - 0.5) * FIELD_WIDTH;
-                positions[i3 + 1] = (Math.random() - 0.5) * 6;
+                positions[i3] = (rand() - 0.5) * FIELD_WIDTH;
+                positions[i3 + 1] = (rand() - 0.5) * 6;
                 positions[i3 + 2] = zPos;
 
-                const mixed = colorInside.clone().lerp(colorOutside, Math.random());
+                const mixed = colorInside.clone().lerp(colorOutside, rand());
                 mixed.multiplyScalar(1 - depthFactor * 0.8);
                 colors[i3] = mixed.r;
                 colors[i3 + 1] = mixed.g;
