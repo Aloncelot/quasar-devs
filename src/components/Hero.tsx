@@ -308,8 +308,8 @@ export const Hero = () => {
                     transition={{ duration: 0.6, delay: 0.95, ease: [0.22, 1, 0.36, 1] }}
                 >
                     {[
-                        { ref: swRef, href: '#software', accent: 'cyan' as const, title: 'hero.route_sw_title', desc: 'hero.route_sw_desc', count: 'hero.route_sw_count' },
-                        { ref: scRef, href: '#supply-chain', accent: 'magenta' as const, title: 'hero.route_sc_title', desc: 'hero.route_sc_desc', count: 'hero.route_sc_count' },
+                        { ref: swRef, href: '#software', accent: 'cyan' as const, title: 'hero.route_sw_title', desc: 'hero.route_sw_desc' },
+                        { ref: scRef, href: '#supply-chain', accent: 'magenta' as const, title: 'hero.route_sc_title', desc: 'hero.route_sc_desc' },
                     ].map((route, i) => (
                         <a
                             key={route.href}
@@ -325,8 +325,7 @@ export const Hero = () => {
                                 <span className="flex items-baseline justify-between gap-3">
                                     <span className="font-display text-lg font-semibold" style={{ color: COLORS[i] }}>
                                         {t(route.title)}
-                                    </span>
-                                    <span className="text-xs text-dim">{t(route.count)}</span>
+                                    </span>                                    
                                 </span>
                                 <span className="mt-1 block min-h-[2.5em] text-sm leading-snug text-dim">{t(route.desc)}</span>
                                 <span
