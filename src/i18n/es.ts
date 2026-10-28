@@ -34,11 +34,9 @@ export const es = {
         route_sc_title: "Ruta supply chain",
         route_sc_desc: "Layouts, WMS, sorters, conveyors y AS/RS",
         lead: "Llevamos tu negocio a",
-        destinations: "una app web a la medida|un CEDIS optimizado|un chatbot con IA|un WMS funcionando|un almacén con mejor layout",
+        destinations: "una app web a la medida|un almacén optimizado|un chatbot con IA|un WMS funcionando|un software para automatizar procesos",
         sr_headline: "Llevamos tu negocio a una app web a la medida, un CEDIS optimizado, un chatbot con IA, un WMS funcionando o un almacén con mejor layout.",
         locked: "QUASAR · DESTINO FIJADO",
-        route_sw_count: "4 servicios",
-        route_sc_count: "6 servicios",
         scroll: "Desliza para despegar",
     },
 
