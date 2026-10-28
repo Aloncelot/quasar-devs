@@ -1,337 +1,294 @@
 'use client';
 
-import { useRef, useState, useMemo, useSyncExternalStore, type ReactNode } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
-import { useCursor, OrbitControls, Line, Sparkles, Html } from '@react-three/drei';
-import { EffectComposer, Bloom } from '@react-three/postprocessing';
-import { useReducedMotion } from 'framer-motion';
-import { easing } from 'maath';
-import * as THREE from 'three';
-import { FaExternalLinkAlt, FaDatabase, FaCode, FaCube, FaRobot, FaTasks } from 'react-icons/fa';
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { motion, useReducedMotion } from 'framer-motion';
+import {
+    FaArrowLeft, FaArrowRight, FaChartLine, FaCode, FaCube, FaDatabase, FaExternalLinkAlt,
+    FaRobot, FaShoppingCart, FaTasks, FaWarehouse,
+} from 'react-icons/fa';
 import { useLanguage } from '@/context/LanguageContext';
-import { CyberCard, CyberLink, Chip, type Accent } from '@/components/ui/Cyber';
+import { CyberCard, CyberLink, Chip } from '@/components/ui/Cyber';
+import { PROJECTS, type ProjectItem } from '@/data/projects';
 
-const POSITIONS: [number, number, number][] = [
-    [-4.2, 1.6, -1.4],
-    [-1.6, 2.9, 0.6],
-    [1.7, 0.5, 1.3],
-    [4.1, 2.1, -0.9],
-    [2.0, -1.0, -1.5],
-];
+/* ------------------------------------------------------------------
+   "Ruta de misiones": una trayectoria cruza la sección con un nodo por
+   proyecto; las tarjetas alternan arriba y abajo. Sin fondo propio:
+   el quasar de la página se ve detrás, igual que en el resto del sitio.
+------------------------------------------------------------------- */
 
-interface Project {
-    id: number;
-    title: string;
-    category: string;
-    description: string;
-    tech: string;
-    color: string;
-    accent: Accent;
-    url: string;
-    icon: ReactNode;
-}
+const ICONS: Record<ProjectItem['icon'], ReactNode> = {
+    database: <FaDatabase />, code: <FaCode />, cube: <FaCube />, cart: <FaShoppingCart />,
+    tasks: <FaTasks />, robot: <FaRobot />, warehouse: <FaWarehouse />, chart: <FaChartLine />,
+};
 
-/** Hook mínimo de media query sin efectos (seguro para SSR: en el servidor devuelve false). */
-const useMediaQuery = (query: string) =>
-    useSyncExternalStore(
-        (onChange) => {
-            const media = window.matchMedia(query);
-            media.addEventListener('change', onChange);
-            return () => media.removeEventListener('change', onChange);
-        },
-        () => window.matchMedia(query).matches,
-        () => false
-    );
-
-let sharedGlowTexture: THREE.Texture | null = null;
-function getGlowTexture() {
-    if (sharedGlowTexture) return sharedGlowTexture;
-    if (typeof document === 'undefined') return null;
-    const canvas = document.createElement('canvas');
-    canvas.width = 64;
-    canvas.height = 64;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return null;
-    const gradient = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
-    gradient.addColorStop(0, 'rgba(255,255,255,1)');
-    gradient.addColorStop(0.2, 'rgba(255,255,255,0.8)');
-    gradient.addColorStop(1, 'rgba(255,255,255,0)');
-    ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, 64, 64);
-    sharedGlowTexture = new THREE.CanvasTexture(canvas);
-    return sharedGlowTexture;
-}
+// Geometría de la ruta (escritorio)
+const TRACK_H = 720;         // alto del área de la ruta
+const CENTER_Y = TRACK_H / 2;
+const EDGE_PAD = 150;        // distancia del primer/último nodo al borde
+const MIN_GAP = 180;         // separación mínima entre nodos (las tarjetas alternan arriba/abajo); si no caben, la ruta se desplaza
+const CARD_W = 256;
+const CARD_OFFSET = 64;      // distancia nodo → tarjeta
+const WAVE = [36, -26, 18, -34, 12, -20];
 
 const isLive = (url: string) => url !== '#';
 
-const ProjectStar = ({ project, position, index, comingSoon }: {
-    project: Project;
-    position: [number, number, number];
-    index: number;
-    comingSoon: string;
+/** Curva suave que pasa por todos los puntos (Catmull-Rom → Bézier). */
+const smoothPath = (pts: [number, number][]) => {
+    if (pts.length < 2) return '';
+    let d = `M${pts[0][0]} ${pts[0][1]}`;
+    for (let i = 0; i < pts.length - 1; i++) {
+        const p0 = pts[i - 1] ?? pts[i];
+        const p1 = pts[i];
+        const p2 = pts[i + 1];
+        const p3 = pts[i + 2] ?? p2;
+        const c1: [number, number] = [p1[0] + (p2[0] - p0[0]) / 6, p1[1] + (p2[1] - p0[1]) / 6];
+        const c2: [number, number] = [p2[0] - (p3[0] - p1[0]) / 6, p2[1] - (p3[1] - p1[1]) / 6];
+        d += ` C ${c1[0]} ${c1[1]}, ${c2[0]} ${c2[1]}, ${p2[0]} ${p2[1]}`;
+    }
+    return d;
+};
+
+interface CardData {
+    item: ProjectItem;
+    title: string;
+    category: string;
+    description: string;
+}
+
+const ProjectCard = ({ data, btn, soon, onHover }: {
+    data: CardData;
+    btn: string;
+    soon: string;
+    onHover?: (on: boolean) => void;
 }) => {
-    const spriteRef = useRef<THREE.Sprite>(null);
-    const [hovered, setHovered] = useState(false);
-    const clickable = isLive(project.url);
-    useCursor(hovered && clickable);
-
-    const texture = useMemo(() => getGlowTexture(), []);
-
-    useFrame((state, delta) => {
-        if (!spriteRef.current) return;
-        // Titileo sutil de la estrella
-        const twinkle = 0.22 + Math.sin(state.clock.elapsedTime * 3 + index * 2) * 0.03;
-        const targetScale = hovered ? 0.38 : twinkle;
-        easing.damp3(spriteRef.current.scale, [targetScale, targetScale, 1], 0.15, delta);
-    });
-
+    const { item } = data;
+    const live = isLive(item.url);
     return (
-        <group position={position}>
-            {/* Zona sensible al puntero (invisible) */}
-            <mesh
-                onClick={() => {
-                    if (clickable) window.open(project.url, '_blank', 'noopener,noreferrer');
-                }}
-                onPointerOver={(e) => { e.stopPropagation(); setHovered(true); }}
-                onPointerOut={() => setHovered(false)}
-            >
-                <sphereGeometry args={[0.28, 8, 8]} />
-                <meshBasicMaterial transparent opacity={0} depthWrite={false} />
-            </mesh>
-
-            <sprite ref={spriteRef}>
-                <spriteMaterial
-                    map={texture ?? undefined}
-                    color={project.color}
-                    transparent
-                    opacity={0.95}
-                    blending={THREE.AdditiveBlending}
-                    depthWrite={false}
-                    toneMapped={false}
-                />
-            </sprite>
-
-            <mesh>
-                <sphereGeometry args={[0.014, 8, 8]} />
-                <meshBasicMaterial color="#ffffff" toneMapped={false} />
-            </mesh>
-
-            {hovered && (
-                <Html position={[0, -0.6, 0]} center zIndexRange={[20, 0]} style={{ pointerEvents: 'none' }}>
-                    <div className="w-56 text-center font-display">
-                        <div className="text-lg font-semibold leading-tight text-white">{project.title}</div>
-                        <div className="mt-1 text-sm font-medium" style={{ color: project.color }}>
-                            {project.category}
-                        </div>
-                        <div className="text-xs text-dim">{clickable ? project.tech : comingSoon}</div>
-                    </div>
-                </Html>
-            )}
-        </group>
-    );
-};
-
-const FlightPath = () => (
-    <Line points={POSITIONS} color="#8a63ff" lineWidth={1} dashed dashSize={0.08} gapSize={0.06} transparent opacity={0.55} />
-);
-
-const PATH_VECTORS = POSITIONS.map((p) => new THREE.Vector3(...p));
-const SEGMENT_LENGTHS = PATH_VECTORS.slice(1).map((p, i) => p.distanceTo(PATH_VECTORS[i]));
-const TOTAL_LENGTH = SEGMENT_LENGTHS.reduce((sum, l) => sum + l, 0);
-const TRAVEL_DURATION = 6;
-
-/** Nave de luz que recorre la ruta entre proyectos. */
-const TravelingSpark = () => {
-    const meshRef = useRef<THREE.Mesh>(null);
-    const materialRef = useRef<THREE.MeshBasicMaterial>(null);
-    const progress = useRef(0);
-
-    useFrame((_, delta) => {
-        progress.current = (progress.current + Math.min(delta, 0.1) / TRAVEL_DURATION) % 1;
-        let remaining = progress.current * TOTAL_LENGTH;
-        let segIndex = 0;
-        while (segIndex < SEGMENT_LENGTHS.length - 1 && remaining > SEGMENT_LENGTHS[segIndex]) {
-            remaining -= SEGMENT_LENGTHS[segIndex];
-            segIndex++;
-        }
-        const segLength = SEGMENT_LENGTHS[segIndex] || 1;
-        const localT = remaining / segLength;
-
-        if (meshRef.current) {
-            meshRef.current.position.lerpVectors(PATH_VECTORS[segIndex], PATH_VECTORS[segIndex + 1], localT);
-        }
-
-        const FADE = 0.1;
-        let opacity = 1;
-        if (progress.current < FADE) opacity = progress.current / FADE;
-        else if (progress.current > 1 - FADE) opacity = (1 - progress.current) / FADE;
-        if (materialRef.current) materialRef.current.opacity = opacity;
-    });
-
-    return (
-        <mesh ref={meshRef}>
-            <sphereGeometry args={[0.03, 8, 8]} />
-            <meshBasicMaterial ref={materialRef} color="#7df9ff" transparent toneMapped={false} />
-        </mesh>
-    );
-};
-
-const ProjectCard = ({ project, btnLabel, soonLabel }: { project: Project; btnLabel: string; soonLabel: string }) => {
-    const live = isLive(project.url);
-    return (
-        <li>
-            <CyberCard accent={project.accent} className="h-full" bodyClassName="flex h-full flex-col gap-4">
-                <span className="flex items-start justify-between gap-4">
-                    <span className="text-2xl" style={{ color: project.color }} aria-hidden="true">
-                        {project.icon}
+        <div onMouseEnter={() => onHover?.(true)} onMouseLeave={() => onHover?.(false)} onFocus={() => onHover?.(true)} onBlur={() => onHover?.(false)}>
+            <CyberCard accent={item.accent} bodyClassName="flex flex-col gap-2 !p-5">
+                <span className="flex items-center justify-between gap-3">
+                    <Chip accent={item.accent}>{data.category}</Chip>
+                    <span className="text-lg" style={{ color: item.color }} aria-hidden="true">{ICONS[item.icon]}</span>
+                </span>
+                <h3 className="mt-1 font-display text-xl font-semibold text-white">{data.title}</h3>
+                <p className="text-sm leading-relaxed text-dim">{data.description}</p>
+                {item.tech && <p className="text-xs text-dim/80">{item.tech}</p>}
+                {live ? (
+                    <a
+                        href={item.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mt-1 inline-flex w-fit items-center gap-2 font-display text-sm font-semibold transition-opacity hover:opacity-80"
+                        style={{ color: item.color }}
+                    >
+                        {btn} <FaExternalLinkAlt aria-hidden="true" size={11} />
+                    </a>
+                ) : (
+                    <span className="mt-1 w-fit border border-dashed border-violet-neon/50 px-2 py-0.5 font-display text-sm text-dim">
+                        {soon}
                     </span>
-                    <Chip accent={project.accent}>{project.category}</Chip>
-                </span>
-                <span className="block">
-                    <h3 className="font-display text-2xl font-semibold text-white">{project.title}</h3>
-                    <span className="mt-2 block text-[0.95rem] leading-relaxed text-dim">{project.description}</span>
-                </span>
-                <span className="mt-auto block pt-2">
-                    {live ? (
-                        <CyberLink href={project.url} external variant="ghost" className="w-full">
-                            {btnLabel} <FaExternalLinkAlt aria-hidden="true" />
-                        </CyberLink>
-                    ) : (
-                        <span className="block border border-dashed border-violet-neon/40 py-3 text-center font-display text-sm text-dim">
-                            {soonLabel}
-                        </span>
-                    )}
-                </span>
+                )}
             </CyberCard>
-        </li>
+        </div>
     );
 };
 
 export const Projects = () => {
     const { t } = useLanguage();
-    const isDesktop = useMediaQuery('(min-width: 768px)');
     const reduceMotion = useReducedMotion();
+    const animate = !reduceMotion;
 
-    const projects: Project[] = [
-        {
-            id: 1, title: t('projects.p1_title'), category: t('projects.p1_cat'), description: t('projects.p1_desc'),
-            tech: 'Next.js + .NET', color: '#8a63ff', accent: 'violet', url: '#', icon: <FaDatabase />,
-        },
-        {
-            id: 2, title: t('projects.p2_title'), category: t('projects.p2_cat'), description: t('projects.p2_desc'),
-            tech: 'React + Firebase', color: '#4debff', accent: 'cyan',
-            url: 'https://www.jorge-valdez-nutricion-clinica.com.mx', icon: <FaCode />,
-        },
-        {
-            id: 3, title: t('projects.p3_title'), category: t('projects.p3_cat'), description: t('projects.p3_desc'),
-            tech: 'Docker + AWS + TypeScript', color: '#e055ff', accent: 'magenta',
-            url: 'https://quasar-logistic.vercel.app/', icon: <FaCube />,
-        },
-        {
-            id: 4, title: t('projects.p4_title'), category: t('projects.p4_cat'), description: t('projects.p4_desc'),
-            tech: 'Next.js + Azure SQL', color: '#3c8dff', accent: 'azure', 
-            url: 'https://vibe-fit-lac.vercel.app/', icon: <FaRobot />,
-        },
-        {
-            id: 5, title: t('projects.p5_title'), category: t('projects.p5_cat'), description: t('projects.p5_desc'),
-            tech: '', color: '#7df9ff', accent: 'cyan', 
-            url: 'https://task-manager-orcin-omega-81.vercel.app/', icon: <FaTasks />,
-        },
-    ];
+    const cards: CardData[] = PROJECTS.map((item) => ({
+        item,
+        title: t(`projects.${item.key}_title`),
+        category: t(`projects.${item.key}_cat`),
+        description: t(`projects.${item.key}_desc`),
+    }));
+
+    /* ---- medida del contenedor para repartir la ruta ---- */
+    const viewportRef = useRef<HTMLDivElement>(null);
+    const [viewW, setViewW] = useState(0);
+    const [scroll, setScroll] = useState({ left: 0, max: 0 });
+    const [hovered, setHovered] = useState<number | null>(null);
+
+    useEffect(() => {
+        const el = viewportRef.current;
+        if (!el) return;
+        const update = () => {
+            setViewW(el.clientWidth);
+            setScroll({ left: el.scrollLeft, max: el.scrollWidth - el.clientWidth });
+        };
+        update();
+        const observer = new ResizeObserver(update);
+        observer.observe(el);
+        el.addEventListener('scroll', update, { passive: true });
+        return () => {
+            observer.disconnect();
+            el.removeEventListener('scroll', update);
+        };
+    }, []);
+
+    const n = cards.length;
+    const layout = useMemo(() => {
+        if (!viewW) return null;
+        const trackW = Math.max(viewW, EDGE_PAD * 2 + (n - 1) * MIN_GAP);
+        const gap = n > 1 ? (trackW - EDGE_PAD * 2) / (n - 1) : 0;
+        const nodes: [number, number][] = Array.from({ length: n }, (_, i) => [
+            n > 1 ? EDGE_PAD + i * gap : trackW / 2,
+            CENTER_Y + WAVE[i % WAVE.length],
+        ]);
+        const path = smoothPath([[0, CENTER_Y + 30], ...nodes, [trackW, CENTER_Y - 14]]);
+        return { trackW, nodes, path };
+    }, [viewW, n]);
+
+    const overflow = scroll.max > 4;
+    const scrollBy = (dir: 1 | -1) =>
+        viewportRef.current?.scrollBy({ left: dir * MIN_GAP * 2, behavior: animate ? 'smooth' : 'auto' });
+
+    const travel = Math.max(6, n * 1.6); // segundos que tarda la luz en recorrer la ruta
 
     return (
-        <section id="proyectos" className="relative scroll-mt-16 bg-void md:min-h-screen">
-            {/* Constelación 3D solo en pantallas anchas (no se monta en móvil) */}
-            {isDesktop && (
-                <div className="absolute inset-0" aria-hidden="true">
-                    <Canvas dpr={[1, 1.5]} camera={{ position: [0, 2.4, 9], fov: 40 }}>
-                        <color attach="background" args={['#060414']} />
-                        <fog attach="fog" args={['#060414', 6, 22]} />
-                        <hemisphereLight intensity={0.25} groundColor="black" />
-
-                        <Sparkles count={200} scale={12} size={1.4} speed={reduceMotion ? 0 : 0.15} color="#9be9ff" opacity={0.45} />
-
-                        <OrbitControls
-                            enablePan={false}
-                            enableZoom={false}
-                            enableRotate
-                            minPolarAngle={Math.PI / 3}
-                            maxPolarAngle={Math.PI / 1.8}
-                            autoRotate={!reduceMotion}
-                            autoRotateSpeed={0.35}
-                        />
-
-                        <group position={[0, -0.3, 0]}>
-                            <FlightPath />
-                            {!reduceMotion && <TravelingSpark />}
-                            {projects.map((project, i) => (
-                                <ProjectStar
-                                    key={project.id}
-                                    project={project}
-                                    position={POSITIONS[i]}
-                                    index={i}
-                                    comingSoon={t('projects.coming_soon')}
-                                />
-                            ))}
-                        </group>
-
-                        <EffectComposer>
-                            <Bloom luminanceThreshold={0.8} mipmapBlur intensity={1.4} radius={0.6} />
-                        </EffectComposer>
-                    </Canvas>
+        <section id="proyectos" className="veil relative scroll-mt-16 py-24 md:py-28">
+            <div className="mx-auto max-w-7xl px-6 md:px-10">
+                <div className="flex flex-wrap items-end justify-between gap-6">
+                    <div>
+                        <h2 className="font-display text-4xl font-bold leading-tight text-white md:text-6xl">
+                            {t('projects.title')}
+                        </h2>
+                        <p className="mt-3 max-w-lg text-lg text-dim">{t('projects.subtitle')}</p>
+                    </div>
+                    {overflow && (
+                        <div className="hidden gap-3 lg:flex">
+                            <button
+                                type="button"
+                                onClick={() => scrollBy(-1)}
+                                disabled={scroll.left <= 4}
+                                aria-label={t('projects.prev')}
+                                className="rounded-sm border border-violet-neon/40 p-3 text-cyan-neon transition-colors hover:border-cyan-neon disabled:opacity-30"
+                            >
+                                <FaArrowLeft aria-hidden="true" />
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => scrollBy(1)}
+                                disabled={scroll.left >= scroll.max - 4}
+                                aria-label={t('projects.next')}
+                                className="rounded-sm border border-violet-neon/40 p-3 text-cyan-neon transition-colors hover:border-cyan-neon disabled:opacity-30"
+                            >
+                                <FaArrowRight aria-hidden="true" />
+                            </button>
+                        </div>
+                    )}
                 </div>
-            )}
-
-            <div className="pointer-events-none relative z-10 mx-auto max-w-7xl px-6 pt-24 md:px-10 md:pt-28">
-                <h2 className="font-display text-4xl font-bold leading-tight text-white md:text-6xl">
-                    {t('projects.title')}
-                </h2>
-                <p className="mt-3 max-w-md text-lg text-dim">
-                    <span className="md:hidden">{t('projects.subtitle_mobile')}</span>
-                    <span className="hidden md:inline">{t('projects.subtitle_desktop')}</span>
-                </p>
             </div>
 
-            {/* Tarjetas (móvil) */}
-            <ul
-                aria-label={t('projects.list_label')}
-                className="relative z-10 mx-auto mt-10 grid max-w-7xl gap-6 px-6 pb-20 md:hidden"
+            {/* ---------- Escritorio: ruta horizontal ---------- */}
+            <div
+                ref={viewportRef}
+                className={`projects-route relative mt-8 hidden lg:block ${overflow ? 'projects-route--scroll' : ''}`}
+                style={{ height: TRACK_H }}
             >
-                {projects.map((project) => (
-                    <ProjectCard
-                        key={project.id}
-                        project={project}
-                        btnLabel={t('projects.btn_access')}
-                        soonLabel={t('projects.coming_soon')}
-                    />
-                ))}
-            </ul>
+                {layout && (
+                    <div className="relative" style={{ width: layout.trackW, height: TRACK_H }}>
+                        <svg aria-hidden="true" className="pointer-events-none absolute inset-0" width={layout.trackW} height={TRACK_H}>
+                            <defs>
+                                <linearGradient id="route-grad" x1="0" x2="1">
+                                    <stop offset="0" stopColor="#8a63ff" stopOpacity="0.15" />
+                                    <stop offset="0.5" stopColor="#8a63ff" stopOpacity="0.8" />
+                                    <stop offset="1" stopColor="#8a63ff" stopOpacity="0.15" />
+                                </linearGradient>
+                            </defs>
+                            <motion.path
+                                d={layout.path}
+                                fill="none"
+                                stroke="url(#route-grad)"
+                                strokeWidth="1.5"
+                                strokeDasharray="6 8"
+                                initial={animate ? { pathLength: 0 } : false}
+                                whileInView={{ pathLength: 1 }}
+                                viewport={{ once: true, amount: 0.3 }}
+                                transition={{ duration: 1.4, ease: 'easeInOut' }}
+                            />
+                            {animate && (
+                                <circle r="4" fill="#4debff" style={{ filter: 'drop-shadow(0 0 8px #4debff)' }}>
+                                    <animateMotion dur={`${travel}s`} repeatCount="indefinite" path={layout.path} />
+                                </circle>
+                            )}
+                            {layout.nodes.map(([x, y], i) => {
+                                const up = i % 2 === 0;
+                                const color = cards[i].item.color;
+                                const lit = hovered === i;
+                                return (
+                                    <g key={cards[i].item.key}>
+                                        <line
+                                            x1={x} y1={up ? y - 12 : y + 12}
+                                            x2={x} y2={up ? y - CARD_OFFSET : y + CARD_OFFSET}
+                                            stroke={color} strokeOpacity={lit ? 0.9 : 0.5}
+                                        />
+                                        <circle
+                                            cx={x} cy={y} r={lit ? 11 : 9}
+                                            fill="#060414" stroke={color} strokeWidth="2"
+                                            style={{ filter: `drop-shadow(0 0 ${lit ? 14 : 8}px ${color})`, transition: 'r .25s' }}
+                                        />
+                                    </g>
+                                );
+                            })}
+                        </svg>
 
-            {/* Lista accesible (lectores de pantalla y teclado) para la versión 3D */}
-            <ul aria-label={t('projects.list_label')} className="sr-only max-md:hidden">
-                {projects.map((project) => (
-                    <li key={project.id}>
-                        {isLive(project.url) ? (
-                            <a href={project.url} target="_blank" rel="noopener noreferrer">
-                                {project.title}: {project.description}
-                            </a>
-                        ) : (
-                            <span>{project.title}: {project.description} ({t('projects.coming_soon')})</span>
-                        )}
+                        {cards.map((card, i) => {
+                            const [x, y] = layout.nodes[i];
+                            const up = i % 2 === 0;
+                            const left = Math.min(Math.max(x - CARD_W / 2, 16), layout.trackW - CARD_W - 16);
+                            return (
+                                <motion.div
+                                    key={card.item.key}
+                                    className="projects-route__card absolute"
+                                    style={{
+                                        width: CARD_W,
+                                        left,
+                                        ...(up ? { bottom: TRACK_H - (y - CARD_OFFSET) } : { top: y + CARD_OFFSET }),
+                                    }}
+                                    initial={animate ? { opacity: 0, y: up ? -16 : 16 } : false}
+                                    whileInView={{ opacity: 1, y: 0 }}
+                                    viewport={{ once: true, amount: 0.4 }}
+                                    transition={{ duration: 0.5, delay: 0.3 + i * 0.12 }}
+                                >
+                                    <ProjectCard
+                                        data={card}
+                                        btn={t('projects.btn_access')}
+                                        soon={t('projects.coming_soon')}
+                                        onHover={(on) => setHovered(on ? i : null)}
+                                    />
+                                </motion.div>
+                            );
+                        })}
+                    </div>
+                )}
+            </div>
+
+            {/* ---------- Móvil y tablet: ruta vertical ---------- */}
+            <ol className="relative mx-auto mt-10 max-w-2xl space-y-6 px-6 md:px-10 lg:hidden">
+                <span
+                    aria-hidden="true"
+                    className="absolute bottom-4 left-[calc(1.5rem+7px)] top-4 w-px border-l border-dashed border-violet-neon/60 md:left-[calc(2.5rem+7px)]"
+                />
+                {cards.map((card) => (
+                    <li key={card.item.key} className="relative pl-10">
+                        <span
+                            aria-hidden="true"
+                            className="absolute left-0 top-6 h-4 w-4 rounded-full border-2 bg-void"
+                            style={{ borderColor: card.item.color, boxShadow: `0 0 10px ${card.item.color}` }}
+                        />
+                        <ProjectCard data={card} btn={t('projects.btn_access')} soon={t('projects.coming_soon')} />
                     </li>
                 ))}
-            </ul>
+            </ol>
 
-            {/* Llamado a la acción sobre la constelación */}
-            <div className="pointer-events-none absolute inset-x-0 bottom-10 z-10 hidden md:block">
-                <div className="mx-auto flex max-w-7xl items-center gap-6 px-10">
-                    <p className="font-display text-lg text-white">{t('projects.cta_text')}</p>
-                    <div className="pointer-events-auto">
-                        <CyberLink href="#contacto" variant="solid" accent="magenta">
-                            {t('projects.cta')}
-                        </CyberLink>
-                    </div>
-                </div>
+            <div className="mx-auto mt-10 flex max-w-7xl flex-wrap items-center gap-6 px-6 md:px-10">
+                <p className="font-display text-lg text-white">{t('projects.cta_text')}</p>
+                <CyberLink href="#contacto" variant="solid" accent="magenta">
+                    {t('projects.cta')}
+                </CyberLink>
             </div>
         </section>
     );

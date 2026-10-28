@@ -100,9 +100,10 @@ export const es = {
     },
 
     projects: {
+        subtitle: "Cada proyecto, una misión cumplida en la ruta de Quasar Devs.",
+        prev: "Ver proyectos anteriores",
+        next: "Ver más proyectos",
         title: "Proyectos en órbita",
-        subtitle_desktop: "Pasa el cursor por las estrellas para explorar cada proyecto.",
-        subtitle_mobile: "Una muestra de lo que hemos construido.",
         btn_access: "Ver proyecto",
         coming_soon: "Próximamente",
         cta_text: "¿Tienes un proyecto en mente?",
@@ -118,8 +119,8 @@ export const es = {
         p3_cat: "Supply chain",
         p3_desc: "Plataforma logística con dashboards de operación y módulo WMS.",
         p4_title: "VibeFit Store",
-        p4_cat: "e-commerce",
-        p4_desc: "Asistente de entrenamiento personal impulsado por IA.",
+        p4_cat: "E-commerce",
+        p4_desc: "Tienda en línea de productos fitness.",
         p5_title: "Task Manager",
         p5_cat: "Aplicación web",
         p5_desc: "Gestor de tareas para organizar proyectos y equipos.",

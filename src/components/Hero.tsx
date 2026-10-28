@@ -267,7 +267,7 @@ export const Hero = () => {
                         <span className="sr-only">{t('hero.sr_headline')}</span>
                         <span aria-hidden="true">
                             <motion.span variants={item} className="block">{t('hero.lead')}</motion.span>
-                            <motion.span variants={item} className="block min-h-[2.2em] sm:min-h-[1.1em]">
+                            <motion.span variants={item} className="block min-h-[2.1em]">
                                 <span className="hero-dest-text">{text}</span>
                                 <span className="text-cyan-neon/60">{scrambled}</span>
                                 <span className="hero-caret" />
@@ -302,39 +302,38 @@ export const Hero = () => {
 
                 {/* Rutas */}
                 <motion.div
-                    className="mt-12 grid max-w-[640px] gap-4 sm:grid-cols-2"
+                    className="mt-12 grid max-w-[640px] auto-rows-fr gap-4 sm:grid-cols-2"
                     initial={animate ? { opacity: 0, y: 18 } : false}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.6, delay: 0.95, ease: [0.22, 1, 0.36, 1] }}
                 >
                     {[
-                        { ref: swRef, href: '#software', accent: 'cyan' as const, title: 'hero.route_sw_title', desc: 'hero.route_sw_desc', count: 'hero.route_sw_count', fill: '64%' },
-                        { ref: scRef, href: '#supply-chain', accent: 'magenta' as const, title: 'hero.route_sc_title', desc: 'hero.route_sc_desc', count: 'hero.route_sc_count', fill: '40%' },
+                        { ref: swRef, href: '#software', accent: 'cyan' as const, title: 'hero.route_sw_title', desc: 'hero.route_sw_desc', count: 'hero.route_sw_count' },
+                        { ref: scRef, href: '#supply-chain', accent: 'magenta' as const, title: 'hero.route_sc_title', desc: 'hero.route_sc_desc', count: 'hero.route_sc_count' },
                     ].map((route, i) => (
                         <a
                             key={route.href}
                             ref={route.ref}
                             href={route.href}
-                            className="block"
+                            className="block h-full"
                             onMouseEnter={() => setHovered(i)}
                             onMouseLeave={() => setHovered(null)}
                             onFocus={() => setHovered(i)}
                             onBlur={() => setHovered(null)}
                         >
-                            <CyberCard accent={route.accent} bodyClassName="!p-5">
+                            <CyberCard accent={route.accent} className="h-full" bodyClassName="flex h-full flex-col !p-5">
                                 <span className="flex items-baseline justify-between gap-3">
                                     <span className="font-display text-lg font-semibold" style={{ color: COLORS[i] }}>
                                         {t(route.title)}
                                     </span>
                                     <span className="text-xs text-dim">{t(route.count)}</span>
                                 </span>
-                                <span className="mt-1 block text-sm leading-snug text-dim">{t(route.desc)}</span>
-                                <span aria-hidden="true" className="relative mt-3 block h-0.5 bg-white/10">
-                                    <span
-                                        className="absolute inset-y-0 left-0"
-                                        style={{ width: route.fill, background: `linear-gradient(90deg, transparent, ${COLORS[i]})`, boxShadow: `0 0 10px ${COLORS[i]}` }}
-                                    />
-                                </span>
+                                <span className="mt-1 block min-h-[2.5em] text-sm leading-snug text-dim">{t(route.desc)}</span>
+                                <span
+                                    aria-hidden="true"
+                                    className="route-meter mt-auto block"
+                                    style={{ ['--c' as string]: COLORS[i], ['--delay' as string]: `${i * 0.35}s` }}
+                                />
                             </CyberCard>
                         </a>
                     ))}

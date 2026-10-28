@@ -98,9 +98,10 @@ export const en: typeof es = {
     },
 
     projects: {
+        subtitle: "Every project, a completed mission along the Quasar Devs route.",
+        prev: "Show previous projects",
+        next: "Show more projects",
         title: "Projects in orbit",
-        subtitle_desktop: "Hover over the stars to explore each project.",
-        subtitle_mobile: "A sample of what we have built.",
         btn_access: "View project",
         coming_soon: "Coming soon",
         cta_text: "Have a project in mind?",
@@ -116,8 +117,8 @@ export const en: typeof es = {
         p3_cat: "Supply chain",
         p3_desc: "Logistics platform with operations dashboards and a WMS module.",
         p4_title: "VibeFit Store",
-        p4_cat: "e-commerce",
-        p4_desc: "AI-powered personal training assistant.",
+        p4_cat: "E-commerce",
+        p4_desc: "Online store for fitness products.",
         p5_title: "Task Manager",
         p5_cat: "Web app",
         p5_desc: "Task manager to organize projects and teams.",

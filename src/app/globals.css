@@ -69,6 +69,13 @@ body {
   to { transform: rotate(-360deg); }
 }
 
+@keyframes meter-run {
+  0%   { transform: translateX(-100%); opacity: 0; }
+  12%  { opacity: 1; }
+  70%  { transform: translateX(222%); opacity: 1; }
+  85%, 100% { transform: translateX(222%); opacity: 0; }
+}
+
 @keyframes caret-blink {
   0%, 100% { opacity: 1; }
   50%      { opacity: 0; }
@@ -298,6 +305,19 @@ body {
   }
 
 
+  /* Proyectos: ruta horizontal; con muchos proyectos se desplaza en X */
+  .projects-route {
+    overflow-x: hidden;
+    overflow-y: hidden;
+  }
+  .projects-route--scroll {
+    overflow-x: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(138, 99, 255, 0.5) transparent;
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 4%, #000 96%, transparent);
+    mask-image: linear-gradient(90deg, transparent, #000 4%, #000 96%, transparent);
+  }
+
   /* ----------------------------------------------------------------
      Hero "fijar destino"
   ----------------------------------------------------------------- */
@@ -316,6 +336,30 @@ body {
     background: var(--cyan);
     box-shadow: 0 0 12px var(--cyan);
     animation: caret-blink 1.1s steps(1, end) infinite;
+  }
+  /* Barra de las rutas: una luz recorre la línea de izquierda a derecha cada 2 s y se desvanece */
+  .route-meter {
+    position: relative;
+    height: calc(0.75rem + 2px);
+    overflow: hidden;
+  }
+  .route-meter::before,
+  .route-meter::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    height: 2px;
+  }
+  .route-meter::before {
+    right: 0;
+    background: rgba(255, 255, 255, 0.08);
+  }
+  .route-meter::after {
+    width: 45%;
+    background: linear-gradient(90deg, transparent, var(--c));
+    box-shadow: 0 0 10px var(--c);
+    animation: meter-run 2s cubic-bezier(0.45, 0, 0.25, 1) var(--delay, 0s) infinite;
   }
   .hero-spin-slow,
   .hero-spin-reverse {
@@ -523,6 +567,7 @@ body {
   .fab-pulse,
   .qspin__spin,
   .hero-caret,
+  .route-meter::after,
   .hero-spin-slow,
   .hero-spin-reverse,
   .hero-thrust,
