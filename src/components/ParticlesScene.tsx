@@ -5,6 +5,7 @@ import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { easing } from 'maath';
 import { useReducedMotion } from 'framer-motion';
 import * as THREE from 'three';
+import { createRandom } from '@/lib/random';
 
 /* Paleta cyberpunk */
 const CORE_COLOR = '#ff4fe8';   // magenta incandescente
@@ -57,6 +58,7 @@ const Galaxy = ({ animate }: { animate: boolean }) => {
     const circleTex = useCircleTexture();
 
     const { positions, colors } = useMemo(() => {
+        const rand = createRandom(1337);
         const positions = new Float32Array(count * 3);
         const colors = new Float32Array(count * 3);
         const core = new THREE.Color(CORE_COLOR);
@@ -67,12 +69,12 @@ const Galaxy = ({ animate }: { animate: boolean }) => {
 
         for (let i = 0; i < count; i++) {
             const i3 = i * 3;
-            const radius = Math.random() * 12;
+            const radius = rand() * 12;
             const spinAngle = radius * 0.8;
             const branchAngle = (i % 3) * ((2 * Math.PI) / 3);
-            const randomX = Math.pow(Math.random(), 3) * (Math.random() < 0.5 ? 1 : -1) * (radius / 2);
-            const randomY = Math.pow(Math.random(), 3) * (Math.random() < 0.5 ? 1 : -1) * (radius / 2);
-            const randomZ = Math.pow(Math.random(), 3) * (Math.random() < 0.5 ? 1 : -1) * (radius / 2);
+            const randomX = Math.pow(rand(), 3) * (rand() < 0.5 ? 1 : -1) * (radius / 2);
+            const randomY = Math.pow(rand(), 3) * (rand() < 0.5 ? 1 : -1) * (radius / 2);
+            const randomZ = Math.pow(rand(), 3) * (rand() < 0.5 ? 1 : -1) * (radius / 2);
             positions[i3] = Math.cos(branchAngle + spinAngle) * radius + randomX;
             positions[i3 + 1] = randomY * (1 - radius / 15);
             positions[i3 + 2] = Math.sin(branchAngle + spinAngle) * radius + randomZ;
@@ -120,12 +122,13 @@ const JetStream = ({ animate }: { animate: boolean }) => {
     const radius = 0.3;
 
     const positions = useMemo(() => {
+        const rand = createRandom(2024);
         const pos = new Float32Array(count * 3);
         for (let i = 0; i < count; i++) {
             const i3 = i * 3;
-            pos[i3] = (Math.random() - 0.5) * radius;
-            pos[i3 + 1] = Math.random() * height;
-            pos[i3 + 2] = (Math.random() - 0.5) * radius;
+            pos[i3] = (rand() - 0.5) * radius;
+            pos[i3 + 1] = rand() * height;
+            pos[i3 + 2] = (rand() - 0.5) * radius;
         }
         return pos;
     }, []);
@@ -133,11 +136,15 @@ const JetStream = ({ animate }: { animate: boolean }) => {
     useFrame((_, delta) => {
         if (!animate) return;
         const safeDelta = Math.min(delta, 0.1);
-        // Ambos chorros comparten el mismo arreglo: se actualiza una vez y se sube a la GPU en cada geometría
+        // Se modifica el arreglo del buffer de la geometría (no el valor de useMemo, que React trata como inmutable).
+        // Ambos chorros comparten ese arreglo: se actualiza una vez y se sube a la GPU en cada geometría.
+        const first = geoms.current[0]?.getAttribute('position') as THREE.BufferAttribute | undefined;
+        if (!first) return;
+        const array = first.array as Float32Array;
         for (let i = 0; i < count; i++) {
             const i3 = i * 3;
-            positions[i3 + 1] += safeDelta * 5;
-            if (positions[i3 + 1] > height) positions[i3 + 1] %= height;
+            array[i3 + 1] += safeDelta * 5;
+            if (array[i3 + 1] > height) array[i3 + 1] %= height;
         }
         geoms.current.forEach((geometry) => {
             const attribute = geometry?.getAttribute('position');
