@@ -28,7 +28,7 @@ export const About = () => {
                     <CyberCard accent="violet" bodyClassName="!p-3">
                         <span className="duotone relative block h-96 w-full overflow-hidden">
                             <Image
-                                src="/alonso-correa.jpg"
+                                src="/alonso-correa.jpeg"
                                 alt={t('about.photo_alt')}
                                 fill
                                 sizes="(min-width: 1024px) 380px, (min-width: 640px) 520px, 90vw"
