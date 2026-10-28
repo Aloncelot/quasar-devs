@@ -187,10 +187,15 @@ export const es = {
         sent_text: "Recibimos tu mensaje. Te escribiremos al correo que indicaste.",
         err_text: "No pudimos enviar tu mensaje. Inténtalo de nuevo o escríbenos directamente por correo.",
         err_wait: "Espera unos segundos antes de enviar otro mensaje.",
-        privacy: "Usamos tus datos únicamente para responderte.",
+        privacy: "Usaremos tus datos solo para responderte y preparar tu propuesta. Por favor no incluyas datos sensibles (por ejemplo, de salud).",
+        consent_pre: "He leído y acepto el",
+        consent_link: "Aviso de Privacidad",
+        err_consent: "Para enviar tu mensaje, acepta el Aviso de Privacidad.",
     },
 
     footer: {
+        privacy: "Aviso de Privacidad",
+        cookies: "Cookies",
         tagline: "Software a la medida y supply chain desde la Ciudad de México.",
         top: "Volver arriba",
         stack: "Hecho con Next.js, React y TypeScript",
@@ -198,8 +203,11 @@ export const es = {
     },
 
     cookies: {
-        label: "Aviso de privacidad",
-        text: "Usamos el almacenamiento de tu navegador solo para recordar tu idioma y este aviso. No usamos cookies de rastreo ni de publicidad.",
+        label: "Aviso de cookies",
+        title: "Uso de cookies",
+        text: "Este sitio no usa cookies de publicidad ni de analítica. Solo usamos almacenamiento local indispensable: tu idioma, esta elección y el historial temporal del chat con Randall.",
+        more: "Consulta el Aviso de Privacidad",
+        accept: "Entendido",
         close: "Cerrar aviso",
     },
 
@@ -222,7 +230,7 @@ export const es = {
         thinking: "Randall está pensando…",
         clear: "Nueva conversación",
         error: "Se me cruzaron los cables ⚡ Intenta de nuevo o escríbenos en [contacto](#contacto).",
-        disclaimer: "Randall es una IA y puede equivocarse.",
+        disclaimer: "Randall es una IA y puede equivocarse. No compartas datos personales.",
         chips: "¿Qué servicios ofrecen?|¿Hacen chatbots con IA?|Layouts de almacén y WMS|¿Cómo cotizo?",
     },
 };

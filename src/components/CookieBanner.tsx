@@ -3,9 +3,17 @@
 import { useSyncExternalStore } from 'react';
 import { FaTimes } from 'react-icons/fa';
 import { useLanguage } from '@/context/LanguageContext';
-import { CyberCard } from '@/components/ui/Cyber';
+import { CyberCard, CyberButton } from '@/components/ui/Cyber';
 
-const STORAGE_KEY = 'quasar-notice-dismissed';
+/*
+ * Aviso de cookies (LFPDPPP). El sitio solo usa almacenamiento local indispensable
+ * (idioma, esta elección e historial temporal del chat), por eso basta con informar
+ * y enlazar al Aviso de Privacidad. Si en el futuro se agregan cookies de analítica
+ * o de terceros, aquí deben ofrecerse las opciones "Aceptar" / "Solo necesarias".
+ *
+ * Sube STORAGE_KEY de versión cuando cambie lo que se informa: el aviso vuelve a mostrarse.
+ */
+const STORAGE_KEY = 'quasar-cookie-notice-v2';
 const CHANGE_EVENT = 'quasar-notice-change';
 
 // Respaldo en memoria por si el navegador bloquea localStorage
@@ -14,7 +22,7 @@ let dismissedInMemory = false;
 const readDismissed = () => {
     if (dismissedInMemory) return true;
     try {
-        return window.localStorage.getItem(STORAGE_KEY) === '1';
+        return window.localStorage.getItem(STORAGE_KEY) !== null;
     } catch {
         return false;
     }
@@ -25,7 +33,6 @@ const subscribe = (onChange: () => void) => {
     return () => window.removeEventListener(CHANGE_EVENT, onChange);
 };
 
-/** Aviso breve de almacenamiento/cookies. Se cierra con la X y no vuelve a aparecer. */
 export const CookieBanner = () => {
     const { t } = useLanguage();
     // En el servidor se considera cerrado: así no aparece un destello antes de hidratar
@@ -36,7 +43,7 @@ export const CookieBanner = () => {
     const close = () => {
         dismissedInMemory = true;
         try {
-            window.localStorage.setItem(STORAGE_KEY, '1');
+            window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ value: 'necessary', date: new Date().toISOString() }));
         } catch {
             /* ignorar */
         }
@@ -50,7 +57,16 @@ export const CookieBanner = () => {
             className="fixed bottom-[calc(100vh/15_+_1.75rem)] left-4 right-24 z-40 max-w-sm sm:right-auto"
         >
             <CyberCard accent="violet" bodyClassName="!p-4 pr-11">
-                <p className="text-sm leading-relaxed text-ink/90">{t('cookies.text')}</p>
+                <p className="font-display text-sm font-semibold text-white">{t('cookies.title')}</p>
+                <p className="mt-1 text-sm leading-relaxed text-ink/90">{t('cookies.text')}</p>
+                <div className="mt-3 flex flex-wrap items-center gap-4">
+                    <CyberButton variant="solid" onClick={close} className="text-sm">
+                        {t('cookies.accept')}
+                    </CyberButton>
+                    <a href="/aviso-de-privacidad#cookies" className="text-sm text-cyan-neon underline underline-offset-4 hover:text-white">
+                        {t('cookies.more')}
+                    </a>
+                </div>
                 <button
                     type="button"
                     onClick={close}

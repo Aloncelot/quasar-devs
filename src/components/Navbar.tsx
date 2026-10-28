@@ -64,11 +64,11 @@ export const Navbar = () => {
     }, [isOpen]);
 
     const navLinks = [
-        { name: t('nav.services'), href: '#servicios' },
-        { name: t('nav.process'), href: '#proceso' },
-        { name: t('nav.projects'), href: '#proyectos' },
-        { name: t('nav.about'), href: '#sobre-mi' },
-        { name: t('nav.contact'), href: '#contacto' },
+        { name: t('nav.services'), href: '/#servicios' },
+        { name: t('nav.process'), href: '/#proceso' },
+        { name: t('nav.projects'), href: '/#proyectos' },
+        { name: t('nav.about'), href: '/#sobre-mi' },
+        { name: t('nav.contact'), href: '/#contacto' },
     ];
 
     return (
@@ -83,7 +83,7 @@ export const Navbar = () => {
                 aria-label="Principal"
                 className="mx-auto flex max-w-7xl items-center justify-between gap-6 px-6 py-3 md:px-10"
             >
-                <a href="#inicio" className="group relative flex items-center gap-2" aria-label="Quasar Devs">
+                <a href="/#inicio" className="group relative flex items-center gap-2" aria-label="Quasar Devs">
                     <LogoMark className="h-10 w-auto transition-[filter] duration-300 group-hover:drop-shadow-[0_0_8px_#4debff]" />
                     <span className="font-gibed text-2xl tracking-[0.08em] text-white transition-colors duration-200 group-hover:text-cyan-neon">
                         QUASAR
@@ -101,7 +101,7 @@ export const Navbar = () => {
                 <div className="flex items-center gap-4">
                     <LanguageToggle />
                     <div className="hidden md:block">
-                        <CyberLink href="#contacto" variant="solid" className="text-sm">
+                        <CyberLink href="/#contacto" variant="solid" className="text-sm">
                             {t('nav.cta')}
                         </CyberLink>
                     </div>
@@ -139,7 +139,7 @@ export const Navbar = () => {
                                 </a>
                             ))}
                             <div className="mt-4 md:hidden">
-                                <CyberLink href="#contacto" variant="solid" className="w-full">
+                                <CyberLink href="/#contacto" variant="solid" className="w-full">
                                     {t('nav.cta')}
                                 </CyberLink>
                             </div>

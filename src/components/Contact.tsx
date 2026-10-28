@@ -14,7 +14,7 @@ const COOLDOWN_MS = 30_000;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 type Status = 'idle' | 'sending' | 'sent' | 'error';
-type FieldErrors = Partial<Record<'name' | 'email' | 'message', boolean>>;
+type FieldErrors = Partial<Record<'name' | 'email' | 'message' | 'consent', boolean>>;
 
 const PROJECT_TYPES = ['software', 'supply', 'both', 'other'] as const;
 
@@ -69,11 +69,12 @@ export const Contact = () => {
         if (!name) nextErrors.name = true;
         if (!EMAIL_RE.test(email)) nextErrors.email = true;
         if (!message) nextErrors.message = true;
+        if (data.get('privacy_consent') !== 'on') nextErrors.consent = true;
         setErrors(nextErrors);
 
-        const firstInvalid = (['name', 'email', 'message'] as const).find((field) => nextErrors[field]);
+        const firstInvalid = (['name', 'email', 'message', 'consent'] as const).find((field) => nextErrors[field]);
         if (firstInvalid) {
-            const fieldName = { name: 'user_name', email: 'user_email', message: 'message' }[firstInvalid];
+            const fieldName = { name: 'user_name', email: 'user_email', message: 'message', consent: 'privacy_consent' }[firstInvalid];
             form.querySelector<HTMLElement>(`[name="${fieldName}"]`)?.focus();
             return;
         }
@@ -113,6 +114,8 @@ export const Contact = () => {
                     user_name: name,
                     user_email: email,
                     project_type: typeLabel,
+                    // Evidencia del consentimiento al Aviso de Privacidad (fecha y hora de aceptación)
+                    privacy_accepted: new Date().toISOString(),
                     // El tipo de proyecto también va dentro del mensaje para que llegue aunque la plantilla no tenga {{project_type}}
                     message: `[${typeLabel}]\n\n${message}`,
                 },
@@ -288,6 +291,29 @@ export const Contact = () => {
                             {errors.message && <p id="err-message" role="alert" className="mt-2 text-sm text-magenta-neon">{t('contact.err_msg')}</p>}
                         </div>
 
+                        {/* Consentimiento (aviso de privacidad simplificado en el punto de recolección) */}
+                        <div>
+                            <p className="text-sm leading-relaxed text-dim">{t('contact.privacy')}</p>
+                            <label htmlFor="privacy_consent" className="mt-3 flex cursor-pointer items-start gap-3 text-sm text-ink">
+                                <input
+                                    id="privacy_consent"
+                                    name="privacy_consent"
+                                    type="checkbox"
+                                    onChange={() => clearError('consent')}
+                                    aria-invalid={errors.consent ? 'true' : 'false'}
+                                    aria-describedby={errors.consent ? 'err-consent' : undefined}
+                                    className="mt-0.5 h-4 w-4 shrink-0 accent-cyan-neon"
+                                />
+                                <span>
+                                    {t('contact.consent_pre')}{' '}
+                                    <a href="/aviso-de-privacidad" target="_blank" rel="noopener" className="text-cyan-neon underline underline-offset-4 hover:text-white">
+                                        {t('contact.consent_link')}
+                                    </a>
+                                </span>
+                            </label>
+                            {errors.consent && <p id="err-consent" role="alert" className="mt-2 text-sm text-magenta-neon">{t('contact.err_consent')}</p>}
+                        </div>
+
                         <div className="flex flex-wrap items-center gap-4 pt-1">
                             <CyberButton
                                 type="submit"
@@ -297,7 +323,6 @@ export const Contact = () => {
                             >
                                 {buttonLabel}
                             </CyberButton>
-                            <p className="text-sm text-dim">{t('contact.privacy')}</p>
                         </div>
 
                         <div role="status" aria-live="polite">

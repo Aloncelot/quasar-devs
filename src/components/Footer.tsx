@@ -128,10 +128,10 @@ export const Footer = () => {
     const scrollToTop = () => window.scrollTo({ top: 0, behavior: reduceMotion ? 'auto' : 'smooth' });
 
     const links = [
-        { label: t('nav.services'), href: '#servicios' },
-        { label: t('nav.projects'), href: '#proyectos' },
-        { label: t('nav.about'), href: '#sobre-mi' },
-        { label: t('nav.contact'), href: '#contacto' },
+        { label: t('nav.services'), href: '/#servicios' },
+        { label: t('nav.projects'), href: '/#proyectos' },
+        { label: t('nav.about'), href: '/#sobre-mi' },
+        { label: t('nav.contact'), href: '/#contacto' },
     ];
 
     return (
@@ -185,6 +185,14 @@ export const Footer = () => {
                     </div>
                     <p className="text-xs text-dim">
                         © {YEAR} Alonso Correa. {t('footer.rights')}
+                    </p>
+                    <p className="flex gap-4 text-xs">
+                        <a href="/aviso-de-privacidad" className="text-dim underline-offset-4 transition-colors hover:text-cyan-neon hover:underline">
+                            {t('footer.privacy')}
+                        </a>
+                        <a href="/aviso-de-privacidad#cookies" className="text-dim underline-offset-4 transition-colors hover:text-cyan-neon hover:underline">
+                            {t('footer.cookies')}
+                        </a>
                     </p>
                 </div>
             </div>

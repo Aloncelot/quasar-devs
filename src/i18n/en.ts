@@ -185,10 +185,15 @@ export const en: typeof es = {
         sent_text: "We received your message. We will write back to the email you provided.",
         err_text: "We could not send your message. Try again or email us directly.",
         err_wait: "Please wait a few seconds before sending another message.",
-        privacy: "We only use your data to reply to you.",
+        privacy: "We will only use your data to reply and prepare your proposal. Please do not include sensitive data (for example, health information).",
+        consent_pre: "I have read and accept the",
+        consent_link: "Privacy Notice",
+        err_consent: "To send your message, please accept the Privacy Notice.",
     },
 
     footer: {
+        privacy: "Privacy Notice",
+        cookies: "Cookies",
         tagline: "Custom software and supply chain consulting from Mexico City.",
         top: "Back to top",
         stack: "Built with Next.js, React and TypeScript",
@@ -196,8 +201,11 @@ export const en: typeof es = {
     },
 
     cookies: {
-        label: "Privacy notice",
-        text: "We use your browser's storage only to remember your language and this notice. We do not use tracking or advertising cookies.",
+        label: "Cookie notice",
+        title: "Cookies",
+        text: "This site does not use advertising or analytics cookies. We only use essential local storage: your language, this choice and the temporary chat history with Randall.",
+        more: "Read the Privacy Notice (Spanish)",
+        accept: "Got it",
         close: "Close notice",
     },
 
@@ -220,7 +228,7 @@ export const en: typeof es = {
         thinking: "Randall is thinking…",
         clear: "New conversation",
         error: "My wires got crossed ⚡ Try again or write to us in [contact](#contacto).",
-        disclaimer: "Randall is an AI and can make mistakes.",
+        disclaimer: "Randall is an AI and can make mistakes. Do not share personal data.",
         chips: "What services do you offer?|Do you build AI chatbots?|Warehouse layouts and WMS|How do I get a quote?",
     },
 };
