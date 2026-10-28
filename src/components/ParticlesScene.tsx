@@ -173,9 +173,24 @@ const Core = () => (
             <sphereGeometry args={[0.6, 32, 32]} />
             <meshBasicMaterial color="#000000" />
         </mesh>
+        {/* Aro del núcleo: magenta neón como el centro de la galaxia y el logo.
+            Sin tone mapping ni niebla, que lo apagaban hasta verse gris. */}
         <mesh rotation={[1.6, 0, 0]}>
-            <torusGeometry args={[0.65, 0.02, 16, 100]} />
-            <meshBasicMaterial color={JET_COLOR} transparent opacity={0.9} />
+            <torusGeometry args={[0.65, 0.032, 16, 128]} />
+            <meshBasicMaterial color={CORE_COLOR} toneMapped={false} fog={false} />
+        </mesh>
+        {/* Halo suave alrededor del aro */}
+        <mesh rotation={[1.6, 0, 0]}>
+            <torusGeometry args={[0.66, 0.11, 16, 128]} />
+            <meshBasicMaterial
+                color={CORE_COLOR}
+                transparent
+                opacity={0.22}
+                blending={THREE.AdditiveBlending}
+                depthWrite={false}
+                toneMapped={false}
+                fog={false}
+            />
         </mesh>
     </group>
 );
