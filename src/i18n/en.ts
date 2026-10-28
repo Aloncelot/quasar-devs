@@ -32,7 +32,7 @@ export const en: typeof es = {
         route_sc_title: "Supply chain route",
         route_sc_desc: "Layouts, WMS, sorters, conveyors and AS/RS",
         lead: "We take your business to",
-        destinations: "a custom web app|an optimized warehouse|an AI chatbot|a running WMS|a software for automating processes",
+        destinations: "a custom web app|an optimized warehouse|an AI chatbot|a running WMS|a custom software",
         sr_headline: "We take your business to a custom web app, an optimized distribution center, an AI chatbot, a running WMS or a better warehouse layout.",
         locked: "QUASAR · DESTINATION LOCKED",
         scroll: "Scroll to launch",
