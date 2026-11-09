@@ -39,12 +39,15 @@ const useDestination = (items: string[], interval: number, animate: boolean) => 
 
     useEffect(() => {
         const target = items[index % Math.max(items.length, 1)] ?? '';
-        if (!animate) {
-            setText(target);
-            setScrambled('');
-            return;
-        }
         let frame = 0;
+        if (!animate) {
+            // Se aplica en el siguiente frame (no de forma síncrona dentro del efecto)
+            frame = requestAnimationFrame(() => {
+                setText(target);
+                setScrambled('');
+            });
+            return () => cancelAnimationFrame(frame);
+        }
         const start = performance.now();
         const duration = 650;
         const tick = (now: number) => {

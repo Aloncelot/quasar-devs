@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import { Footer } from '@/components/Footer';
 import { EMAIL } from '@/lib/config';
 
@@ -212,7 +213,7 @@ export default function AvisoDePrivacidad() {
                     </p>
 
                     <p className="!mt-12">
-                        <a href="/">Volver al inicio</a>
+                        <Link href="/">Volver al inicio</Link>
                     </p>
                 </article>
             </main>

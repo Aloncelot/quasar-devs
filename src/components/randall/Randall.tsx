@@ -94,7 +94,11 @@ export default function Randall() {
         openRef.current = open;
     }, [mood, open]);
 
-    const newId = () => Date.now() * 1000 + (nextId.current++ % 1000);
+    /** Ids únicos y crecientes (también tras recargar el historial guardado). */
+    const newId = () => {
+        nextId.current = Math.max(nextId.current, ...messages.map((m) => m.id)) + 1;
+        return nextId.current;
+    };
 
     /** Cambia la expresión; si ms > 0 vuelve a `after` al terminar. */
     const express = useCallback((next: Mood, ms = 0, after: Mood = 'idle') => {
