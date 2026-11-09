@@ -30,7 +30,7 @@ const gibed = localFont({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://quasar-devs.vercel.app"),
+  metadataBase: new URL("https://quasardevs.com"),
   title: es.meta.title,
   description: es.meta.description,
   applicationName: "Quasar Devs",
