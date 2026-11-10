@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useMemo, useEffect, type RefObject } from 'react';
+import { useRef, useMemo, useEffect, useState, type RefObject } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { easing } from 'maath';
 import { useReducedMotion } from 'framer-motion';
@@ -244,6 +244,8 @@ export const ParticlesScene = () => {
 
     const animate = !reduceMotion;
     const tiltRotation: [number, number, number] = [-0.4, 0, -0.5];
+    // Mientras WebGL arranca se ve un resplandor del núcleo en CSS (skeleton de la escena)
+    const [ready, setReady] = useState(false);
 
     return (
         <div aria-hidden="true" className="fixed left-0 top-0 -z-10 h-screen w-full bg-void">
@@ -251,6 +253,7 @@ export const ParticlesScene = () => {
                 camera={{ position: [8, 10, 12], fov: 50 }}
                 dpr={[1, 1.5]}
                 gl={{ antialias: false, powerPreference: 'high-performance' }}
+                onCreated={() => requestAnimationFrame(() => setReady(true))}
             >
                 <fog attach="fog" args={['#060414', 10, 40]} />
                 <CameraRig progress={progress} animate={animate} />
@@ -260,6 +263,7 @@ export const ParticlesScene = () => {
                     <Galaxy animate={animate} />
                 </group>
             </Canvas>
+            <div data-loaded={String(ready)} className="scene-fallback skeleton-fade" />
         </div>
     );
 };

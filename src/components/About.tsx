@@ -1,9 +1,11 @@
 'use client';
 
+import { useState } from 'react';
 import Image from 'next/image';
 import { FaMapMarkerAlt, FaLanguage } from 'react-icons/fa';
 import { useLanguage } from '@/context/LanguageContext';
 import { CyberCard, CyberLink, Chip, type Accent } from '@/components/ui/Cyber';
+import { Skeleton } from '@/components/ui/Skeleton';
 
 const STATS = [
     { value: 'about.stat1_value', label: 'about.stat1_label', color: 'text-magenta-neon' },
@@ -19,6 +21,7 @@ const STACKS: { list: string; label: string; accent: Accent }[] = [
 
 export const About = () => {
     const { t, list } = useLanguage();
+    const [photoLoaded, setPhotoLoaded] = useState(false);
 
     return (
         <section id="sobre-mi" className="veil relative scroll-mt-16 py-24 md:py-32">
@@ -33,7 +36,9 @@ export const About = () => {
                                 fill
                                 sizes="(min-width: 1024px) 380px, (min-width: 640px) 520px, 90vw"
                                 className="object-cover"
+                                onLoad={() => setPhotoLoaded(true)}
                             />
+                            <Skeleton loaded={photoLoaded} className="absolute inset-0" />
                         </span>
                     </CyberCard>
 
