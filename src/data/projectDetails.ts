@@ -33,6 +33,10 @@ export const PROJECT_DETAILS: Record<string, ProjectDetail> = {
         es: 'Gestor de tareas tipo Kanban con estética cyberpunk (versión demo). Permite crear proyectos y tareas, moverlas entre columnas, ver el historial de cambios y recibir alertas; se entra como invitado con un clic. En la demo todo vive en memoria (sin base de datos). Tecnologías: Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS 4, Zustand para el estado y Lucide para íconos, con cabeceras de seguridad (CSP).',
         en: 'Kanban-style task manager with a cyberpunk look (demo version). You can create projects and tasks, move them between columns, see the change history and get alerts; guests can enter with one click. In the demo everything lives in memory (no database). Tech: Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS 4, Zustand for state and Lucide icons, with security headers (CSP).',
     },
+    p7: {
+        es: 'Chatbot con IA de Quasar Devs y ejemplo del servicio de chatbots. Responde con la información de este sitio, que se genera automáticamente desde sus textos; si la IA no está disponible, contesta con respuestas predefinidas. Tiene límites de uso por visitante y solo acepta peticiones de este sitio. Tecnologías: backend en Python con FastAPI (desplegado en Vercel) y un modelo de lenguaje vía Groq; frontend en React y TypeScript con un avatar en pixel art animado (SVG).',
+        en: 'Quasar Devs\' AI chatbot and a sample of the chatbot service. It answers with this site\'s information, which is generated automatically from the site copy; if the AI is unavailable it replies with predefined answers. It has per-visitor usage limits and only accepts requests from this site. Tech: Python backend with FastAPI (deployed on Vercel) and a language model through Groq; React and TypeScript frontend with an animated pixel-art avatar (SVG).',
+    },
     p6: {
         es: 'Proyecto próximo (en planeación). Herramienta de S&OP (planeación de ventas y operaciones) que integra inventarios, planeación de la demanda y programación para alinear lo que se vende con lo que se puede surtir y producir. Tecnologías previstas: Next.js con TypeScript y Tailwind CSS, base de datos en Azure SQL y Python para el análisis de datos y pronósticos.',
         en: 'Upcoming project (in planning). S&OP (sales and operations planning) tool that brings together inventory, demand planning and scheduling to align what is sold with what can be supplied and produced. Planned tech: Next.js with TypeScript and Tailwind CSS, an Azure SQL database and Python for data analysis and forecasting.',
@@ -44,11 +48,6 @@ export const EXTRA_PROJECTS: ExtraProject[] = [
         title: 'Quasar Devs (este sitio)',
         es: 'La propia landing de Quasar Devs, bilingüe (español e inglés), con escena 3D animada, formulario de contacto con aviso de privacidad y cabeceras de seguridad. Tecnologías: Next.js 16, React 19, TypeScript, Tailwind CSS, Three.js con React Three Fiber, Framer Motion y EmailJS, desplegada en Vercel.',
         en: 'The Quasar Devs landing page itself, bilingual (Spanish and English), with an animated 3D scene, a contact form with a privacy notice and security headers. Tech: Next.js 16, React 19, TypeScript, Tailwind CSS, Three.js with React Three Fiber, Framer Motion and EmailJS, deployed on Vercel.',
-    },
-    {
-        title: 'Randall (asistente de este sitio)',
-        es: 'Chatbot con IA de Quasar Devs y ejemplo del servicio de chatbots. Responde con la información de este sitio, que se genera automáticamente desde sus textos; si la IA no está disponible, contesta con respuestas predefinidas. Tiene límites de uso por visitante y solo acepta peticiones de este sitio. Tecnologías: backend en Python con FastAPI (desplegado en Vercel) y un modelo de lenguaje vía Groq; frontend en React y TypeScript con un avatar en pixel art animado (SVG).',
-        en: 'Quasar Devs\' AI chatbot and a sample of the chatbot service. It answers with this site\'s information, which is generated automatically from the site copy; if the AI is unavailable it replies with predefined answers. It has per-visitor usage limits and only accepts requests from this site. Tech: Python backend with FastAPI (deployed on Vercel) and a language model through Groq; React and TypeScript frontend with an animated pixel-art avatar (SVG).',
     },
     {
         title: 'Lector PDF con IA (app móvil)',

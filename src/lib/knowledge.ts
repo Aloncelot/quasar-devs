@@ -32,6 +32,7 @@ const LABELS = {
         tech: 'Tecnología',
         link: 'Enlace',
         soon: 'Próximamente',
+        onsite: 'Disponible en esta misma página (botón en la tarjeta o el avatar de la esquina)',
         email: 'Correo',
         whatsapp: 'WhatsApp',
         booking: 'Agendar llamada',
@@ -57,6 +58,7 @@ const LABELS = {
         tech: 'Tech',
         link: 'Link',
         soon: 'Coming soon',
+        onsite: 'Available on this same page (button on the card or the avatar in the corner)',
         email: 'Email',
         whatsapp: 'WhatsApp',
         booking: 'Book a call',
@@ -99,7 +101,7 @@ export function buildKnowledge(lang: KnowledgeLang): string {
     const projects = PROJECTS.map((p) => {
         const extra = [
             p.tech ? `${l.tech}: ${p.tech}` : '',
-            p.url && p.url !== '#' ? `${l.link}: ${p.url}` : l.soon,
+            p.url.startsWith('https://') ? `${l.link}: ${p.url}` : p.url === '#' ? l.soon : l.onsite,
         ].filter(Boolean);
         const detail = PROJECT_DETAILS[p.key]?.[lang];
         return [

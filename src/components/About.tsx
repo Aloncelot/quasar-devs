@@ -26,23 +26,25 @@ export const About = () => {
     return (
         <section id="sobre-mi" className="veil relative scroll-mt-16 py-24 md:py-32">
             <div className="mx-auto grid max-w-7xl gap-14 px-6 md:px-10 lg:grid-cols-12 lg:gap-16">
-                {/* Retrato */}
-                <div className="lg:col-span-4">
-                    <CyberCard accent="violet" bodyClassName="!p-3">
-                        <span className="duotone relative block h-96 w-full overflow-hidden">
-                            <Image
-                                src="/alonso-correa.jpeg"
-                                alt={t('about.photo_alt')}
-                                fill
-                                sizes="(min-width: 1024px) 380px, (min-width: 640px) 520px, 90vw"
-                                className="object-cover"
-                                onLoad={() => setPhotoLoaded(true)}
-                            />
-                            <Skeleton loaded={photoLoaded} className="absolute inset-0" />
-                        </span>
-                    </CyberCard>
+                {/* Retrato: en celular y tablet, foto chica junto a los datos; en escritorio, retrato grande */}
+                <div className="flex items-center gap-5 lg:col-span-4 lg:block">
+                    <div className="w-32 flex-none sm:w-40 lg:w-auto">
+                        <CyberCard accent="violet" bodyClassName="!p-2 lg:!p-3">
+                            <span className="duotone relative block h-[9.5rem] w-full overflow-hidden sm:h-48 lg:h-96">
+                                <Image
+                                    src="/alonso-correa.jpeg"
+                                    alt={t('about.photo_alt')}
+                                    fill
+                                    sizes="(min-width: 1024px) 380px, 160px"
+                                    className="object-cover"
+                                    onLoad={() => setPhotoLoaded(true)}
+                                />
+                                <Skeleton loaded={photoLoaded} className="absolute inset-0" />
+                            </span>
+                        </CyberCard>
+                    </div>
 
-                    <ul className="mt-6 space-y-3 text-dim">
+                    <ul className="space-y-3 text-dim lg:mt-6">
                         <li className="flex items-center gap-3">
                             <FaMapMarkerAlt className="text-cyan-neon" aria-hidden="true" />
                             <span>{t('about.base')}</span>

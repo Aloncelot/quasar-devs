@@ -8,6 +8,7 @@ import { RANDALL_API_URL } from '@/lib/config';
 import { RandallSprite } from './RandallSprite';
 import { RichText } from './RichText';
 import type { Mood } from './sprite';
+import { RANDALL_OPEN_EVENT } from './events';
 import styles from './randall.module.css';
 
 interface Message {
@@ -245,6 +246,13 @@ export default function Randall() {
         doWave();
         window.setTimeout(() => inputRef.current?.focus(), 60);
     }, [express, doWave]);
+
+    // Otros componentes (p. ej. la tarjeta de Randall en Proyectos) pueden abrir el chat con un evento
+    useEffect(() => {
+        const onOpen = () => openPanel();
+        window.addEventListener(RANDALL_OPEN_EVENT, onOpen);
+        return () => window.removeEventListener(RANDALL_OPEN_EVENT, onOpen);
+    }, [openPanel]);
 
     const closePanel = useCallback(() => {
         setOpen(false);

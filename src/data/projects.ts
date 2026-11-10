@@ -17,8 +17,8 @@ export interface ProjectItem {
     tech: string;
     color: string;        // color del nodo y del texto de acento
     accent: Accent;       // color del borde de la tarjeta
-    url: string;          // '#' = próximamente
-    icon: 'database' | 'code' | 'cube' | 'cart' | 'tasks' | 'robot' | 'warehouse' | 'chart';
+    url: string;          // '#' = próximamente · '#randall' = abre el chat de Randall
+    icon: 'database' | 'code' | 'cube' | 'cart' | 'tasks' | 'robot' | 'warehouse' | 'chart' | 'randall';
 }
 
 export const PROJECTS: ProjectItem[] = [
@@ -26,5 +26,6 @@ export const PROJECTS: ProjectItem[] = [
     { key: 'p3', tech: 'Docker + AWS + TypeScript', color: '#e055ff', accent: 'magenta', url: 'https://quasar-logistic.vercel.app/', icon: 'cube' },
     { key: 'p4', tech: 'Next.js + Azure SQL', color: '#3c8dff', accent: 'azure', url: 'https://vibe-fit-lac.vercel.app/', icon: 'cart' },
     { key: 'p5', tech: 'Next.js + TypeScript + Zustand', color: '#7df9ff', accent: 'cyan', url: 'https://task-manager-orcin-omega-81.vercel.app/', icon: 'tasks' },
+    { key: 'p7', tech: 'Python + FastAPI + LLM', color: '#3ee0cf', accent: 'cyan', url: '#randall', icon: 'randall' },
     { key: 'p6', tech: 'Next.js + Azure SQL + Python', color: '#e055ff', accent: 'magenta', url: '#', icon: 'chart' },
 ];

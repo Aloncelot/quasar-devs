@@ -3,12 +3,14 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import {
-    FaArrowLeft, FaArrowRight, FaChartLine, FaCode, FaCube, FaDatabase, FaExternalLinkAlt,
+    FaArrowLeft, FaArrowRight, FaChartLine, FaCode, FaCommentDots, FaCube, FaDatabase, FaExternalLinkAlt,
     FaRobot, FaShoppingCart, FaTasks, FaWarehouse,
 } from 'react-icons/fa';
 import { useLanguage } from '@/context/LanguageContext';
 import { CyberCard, CyberLink, Chip } from '@/components/ui/Cyber';
 import { PROJECTS, type ProjectItem } from '@/data/projects';
+import { RandallSprite } from '@/components/randall/RandallSprite';
+import { RANDALL_OPEN_EVENT } from '@/components/randall/events';
 
 /* ------------------------------------------------------------------
    "Ruta de misiones": una trayectoria cruza la sección con un nodo por
@@ -19,6 +21,7 @@ import { PROJECTS, type ProjectItem } from '@/data/projects';
 const ICONS: Record<ProjectItem['icon'], ReactNode> = {
     database: <FaDatabase />, code: <FaCode />, cube: <FaCube />, cart: <FaShoppingCart />,
     tasks: <FaTasks />, robot: <FaRobot />, warehouse: <FaWarehouse />, chart: <FaChartLine />,
+    randall: <RandallSprite mood="happy" shadow={false} className="block h-[1.6em] w-[1.6em]" />,
 };
 
 // Geometría de la ruta (escritorio)
@@ -30,6 +33,8 @@ const CARD_W = 256;
 const CARD_OFFSET = 64;      // distancia nodo → tarjeta
 const WAVE = [36, -26, 18, -34, 12, -20];
 
+/** Valor especial de `url`: el botón abre el chat de Randall en vez de un enlace. */
+const RANDALL_URL = '#randall';
 const isLive = (url: string) => url !== '#';
 
 /** Curva suave que pasa por todos los puntos (Catmull-Rom → Bézier). */
@@ -62,6 +67,7 @@ const ProjectCard = ({ data, btn, soon, onHover }: {
     onHover?: (on: boolean) => void;
 }) => {
     const { item } = data;
+    const { t } = useLanguage();
     const live = isLive(item.url);
     return (
         <div onMouseEnter={() => onHover?.(true)} onMouseLeave={() => onHover?.(false)} onFocus={() => onHover?.(true)} onBlur={() => onHover?.(false)}>
@@ -73,7 +79,16 @@ const ProjectCard = ({ data, btn, soon, onHover }: {
                 <h3 className="mt-1 font-display text-xl font-semibold text-white">{data.title}</h3>
                 <p className="text-sm leading-relaxed text-dim">{data.description}</p>
                 {item.tech && <p className="text-xs text-dim/80">{item.tech}</p>}
-                {live ? (
+                {item.url === RANDALL_URL ? (
+                    <button
+                        type="button"
+                        onClick={() => window.dispatchEvent(new Event(RANDALL_OPEN_EVENT))}
+                        className="mt-1 inline-flex w-fit items-center gap-2 font-display text-sm font-semibold transition-opacity hover:opacity-80"
+                        style={{ color: item.color }}
+                    >
+                        {t('projects.btn_talk')} <FaCommentDots aria-hidden="true" size={12} />
+                    </button>
+                ) : live ? (
                     <a
                         href={item.url}
                         target="_blank"
