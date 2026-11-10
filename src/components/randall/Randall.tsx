@@ -87,8 +87,16 @@ export default function Randall() {
     const moodRef = useRef<Mood>('idle');
     const openRef = useRef(false);
     const lastActivity = useRef(0);
-    /** No permite enviar otra pregunta antes de este momento (anti-spam y respeta el Retry-After del servidor). */
-    const blockedUntil = useRef(0);
+    /** Pausa entre preguntas (anti-spam y respeta el Retry-After del servidor). Se libera con un temporizador. */
+    const blocked = useRef(false);
+    const blockTimer = useRef<number | undefined>(undefined);
+    const blockFor = (ms: number) => {
+        blocked.current = true;
+        window.clearTimeout(blockTimer.current);
+        blockTimer.current = window.setTimeout(() => {
+            blocked.current = false;
+        }, ms);
+    };
     const nextId = useRef(0);
 
     useEffect(() => {
@@ -257,8 +265,8 @@ export default function Randall() {
     const ask = async (raw: string) => {
         const text = raw.trim().slice(0, MAX_INPUT);
         if (!text || pending || !RANDALL_API_URL) return;
-        if (Date.now() < blockedUntil.current) return;
-        blockedUntil.current = Date.now() + 2_000;
+        if (blocked.current) return;
+        blockFor(2_000);
 
         const userMsg: Message = { id: newId(), role: 'user', content: text };
         const history = [...messages.filter((m) => !m.local), userMsg].slice(-10);
@@ -286,7 +294,7 @@ export default function Randall() {
             const finalMood = SERVER_MOODS.includes(data.mood as Mood) ? (data.mood as Mood) : 'happy';
             if (res.status === 429) {
                 const wait = Math.min(Number(res.headers.get('Retry-After')) || 30, 120);
-                blockedUntil.current = Date.now() + wait * 1000;
+                blockFor(wait * 1000);
             }
             const botMsg: Message = { id: newId(), role: 'assistant', content: reply, local: res.status === 429 };
             setMessages((prev) => [...prev, botMsg]);

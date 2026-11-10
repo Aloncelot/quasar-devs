@@ -26,7 +26,6 @@ const num = (value: string | undefined, fallback: number) => {
 
 /** Quita caracteres de control (menos saltos de línea y tabuladores) y recorta. */
 const clean = (value: unknown, max: number) =>
-    // eslint-disable-next-line no-control-regex
     (typeof value === 'string' ? value : '').replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '').trim().slice(0, max);
 
 const json = (body: Record<string, unknown>, status: number, headers?: Record<string, string>) =>
