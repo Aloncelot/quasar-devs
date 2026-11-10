@@ -30,8 +30,3 @@ export const RANDALL_API_URL =
     safeApi(process.env.NEXT_PUBLIC_RANDALL_API_URL) ??
     (process.env.NODE_ENV === 'development' ? 'http://localhost:8000' : undefined);
 
-export const EMAILJS = {
-    serviceId: process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID,
-    templateId: process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID,
-    publicKey: process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY,
-};

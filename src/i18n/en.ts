@@ -183,6 +183,7 @@ export const en: typeof es = {
         sent_text: "We received your message. We will write back to the email you provided.",
         err_text: "We could not send your message. Try again or email us directly.",
         err_wait: "Please wait a few seconds before sending another message.",
+        err_limit: "We have already received several messages from your connection. Please try again later or email us directly.",
         privacy: "We will only use your data to reply and prepare your proposal. Please do not include sensitive data (for example, health information).",
         consent_pre: "I have read and accept the",
         consent_link: "Privacy Notice",

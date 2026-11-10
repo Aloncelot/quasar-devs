@@ -1,13 +1,12 @@
 'use client';
 
-import { useState, useRef, type FormEvent, type ReactNode } from 'react';
+import { useEffect, useState, useRef, type FormEvent, type ReactNode } from 'react';
 import {
     FaGithub, FaLinkedin, FaEnvelope, FaMapMarkerAlt, FaWhatsapp, FaCalendarCheck, FaCopy, FaCheck,
 } from 'react-icons/fa';
-import emailjs from '@emailjs/browser';
 import { useLanguage } from '@/context/LanguageContext';
 import { CyberCard, CyberButton } from '@/components/ui/Cyber';
-import { EMAIL, GITHUB_URL, LINKEDIN_URL, BOOKING_URL, WHATSAPP, EMAILJS } from '@/lib/config';
+import { EMAIL, GITHUB_URL, LINKEDIN_URL, BOOKING_URL, WHATSAPP } from '@/lib/config';
 
 const MAX = { name: 80, email: 120, message: 2000 } as const;
 const COOLDOWN_MS = 30_000;
@@ -31,13 +30,18 @@ const ContactLink = ({ href, icon, children }: { href: string; icon: ReactNode; 
 );
 
 export const Contact = () => {
-    const { t } = useLanguage();
+    const { t, lang } = useLanguage();
 
     const [status, setStatus] = useState<Status>('idle');
     const [errors, setErrors] = useState<FieldErrors>({});
     const [errorText, setErrorText] = useState('');
     const [copied, setCopied] = useState(false);
     const lastSent = useRef(0);
+    /** Momento en que la persona empezó a llenar el formulario (el servidor rechaza envíos "instantáneos"). */
+    const startedAt = useRef(0);
+    useEffect(() => {
+        startedAt.current = Date.now();
+    }, []);
 
     const copyEmail = async () => {
         try {
@@ -94,33 +98,34 @@ export const Contact = () => {
             return;
         }
 
-        const { serviceId, templateId, publicKey } = EMAILJS;
-        if (!serviceId || !templateId || !publicKey) {
-            setErrorText(t('contact.err_text'));
-            setStatus('error');
-            setTimeout(() => setStatus('idle'), 5000);
-            return;
-        }
-
-        const typeLabel = t(`contact.type_${PROJECT_TYPES.includes(typeKey as (typeof PROJECT_TYPES)[number]) ? typeKey : 'other'}`);
+        const type = PROJECT_TYPES.includes(typeKey as (typeof PROJECT_TYPES)[number]) ? typeKey : 'other';
 
         setStatus('sending');
         setErrorText('');
         try {
-            await emailjs.send(
-                serviceId,
-                templateId,
-                {
-                    user_name: name,
-                    user_email: email,
-                    project_type: typeLabel,
-                    // Evidencia del consentimiento al Aviso de Privacidad (fecha y hora de aceptación)
-                    privacy_accepted: new Date().toISOString(),
-                    // El tipo de proyecto también va dentro del mensaje para que llegue aunque la plantilla no tenga {{project_type}}
-                    message: `[${typeLabel}]\n\n${message}`,
-                },
-                { publicKey }
-            );
+            // El envío pasa por nuestro servidor (/api/contact): ahí viven la llave privada de EmailJS,
+            // los límites por visitante y las validaciones que un bot no puede saltarse.
+            const res = await fetch('/api/contact', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name,
+                    email,
+                    message,
+                    type,
+                    lang,
+                    consent: true,
+                    company: honeypot,
+                    startedAt: startedAt.current,
+                }),
+            });
+            if (res.status === 429) {
+                setErrorText(t('contact.err_limit'));
+                setStatus('error');
+                setTimeout(() => setStatus('idle'), 8000);
+                return;
+            }
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
             lastSent.current = Date.now();
             setStatus('sent');
             form.reset();

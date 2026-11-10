@@ -185,6 +185,7 @@ export const es = {
         sent_text: "Recibimos tu mensaje. Te escribiremos al correo que indicaste.",
         err_text: "No pudimos enviar tu mensaje. Inténtalo de nuevo o escríbenos directamente por correo.",
         err_wait: "Espera unos segundos antes de enviar otro mensaje.",
+        err_limit: "Ya recibimos varios mensajes desde tu conexión. Intenta más tarde o escríbenos directamente por correo.",
         privacy: "Usaremos tus datos solo para responderte y preparar tu propuesta. Por favor no incluyas datos sensibles (por ejemplo, de salud).",
         consent_pre: "He leído y acepto el",
         consent_link: "Aviso de Privacidad",
