@@ -25,6 +25,6 @@ export const PROJECTS: ProjectItem[] = [
     { key: 'p1', tech: 'Next.js + .NET', color: '#8a63ff', accent: 'violet', url: '#', icon: 'database' },
     { key: 'p3', tech: 'Docker + AWS + TypeScript', color: '#e055ff', accent: 'magenta', url: 'https://quasar-logistic.vercel.app/', icon: 'cube' },
     { key: 'p4', tech: 'Next.js + Azure SQL', color: '#3c8dff', accent: 'azure', url: 'https://vibe-fit-lac.vercel.app/', icon: 'cart' },
-    { key: 'p5', tech: '', color: '#7df9ff', accent: 'cyan', url: 'https://task-manager-orcin-omega-81.vercel.app/', icon: 'tasks' },
+    { key: 'p5', tech: 'Next.js + TypeScript + Zustand', color: '#7df9ff', accent: 'cyan', url: 'https://task-manager-orcin-omega-81.vercel.app/', icon: 'tasks' },
     { key: 'p6', tech: 'Next.js + Azure SQL + Python', color: '#e055ff', accent: 'magenta', url: '#', icon: 'chart' },
 ];
