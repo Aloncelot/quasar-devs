@@ -108,9 +108,6 @@ export const en: typeof es = {
         p1_title: "Cost Estimator",
         p1_cat: "Full stack",
         p1_desc: "Cost estimation system backed by a real-time database.",
-        p2_title: "Nutrición JV",
-        p2_cat: "Frontend and backend",
-        p2_desc: "Platform for nutritionists with patient and diet tracking.",
         p3_title: "Quasar Logistic",
         p3_cat: "Supply chain",
         p3_desc: "Logistics control tower: on-time-in-full (OTIF) delivery analysis from SAP reports, with KPIs and an executive report.",
@@ -120,6 +117,9 @@ export const en: typeof es = {
         p5_title: "Task Manager",
         p5_cat: "Web app",
         p5_desc: "Task manager to organize projects and teams.",
+        p6_title: "Quasar S&OP",
+        p6_cat: "Supply chain",
+        p6_desc: "Sales and operations planning: inventory, demand planning and scheduling in a single tool.",
     },
 
     about: {

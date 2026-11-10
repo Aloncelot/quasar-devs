@@ -110,9 +110,6 @@ export const es = {
         p1_title: "Cost Estimator",
         p1_cat: "Full stack",
         p1_desc: "Sistema de estimación de costos con base de datos en tiempo real.",
-        p2_title: "Nutrición JV",
-        p2_cat: "Frontend y backend",
-        p2_desc: "Plataforma para nutriólogos con seguimiento de pacientes y dietas.",
         p3_title: "Quasar Logistic",
         p3_cat: "Supply chain",
         p3_desc: "Torre de control logística: análisis de cumplimiento de entregas (OTIF) a partir de reportes de SAP, con indicadores y reporte ejecutivo.",
@@ -122,6 +119,9 @@ export const es = {
         p5_title: "Task Manager",
         p5_cat: "Aplicación web",
         p5_desc: "Gestor de tareas para organizar proyectos y equipos.",
+        p6_title: "Quasar S&OP",
+        p6_cat: "Supply chain",
+        p6_desc: "Planeación de ventas y operaciones: inventarios, planeación de la demanda y programación en una sola herramienta.",
     },
 
     about: {
