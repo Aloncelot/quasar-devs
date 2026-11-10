@@ -8,6 +8,7 @@
 import { es } from '@/i18n/es';
 import { en } from '@/i18n/en';
 import { PROJECTS } from '@/data/projects';
+import { EXTRA_PROJECTS, PROJECT_DETAILS } from '@/data/projectDetails';
 import { BOOKING_URL, EMAIL, GITHUB_URL, LINKEDIN_URL, WHATSAPP } from '@/lib/config';
 
 export type KnowledgeLang = 'es' | 'en';
@@ -22,6 +23,8 @@ const LABELS = {
         services: 'Servicios',
         process: 'Proceso de trabajo (sección #proceso)',
         projects: 'Proyectos en órbita (sección #proyectos)',
+        details: 'Detalle',
+        extra: 'Otros proyectos de Quasar Devs (no aparecen en la sección de proyectos)',
         about: 'Sobre el fundador (sección #sobre-mi)',
         contact: 'Contacto y cotizaciones (sección #contacto)',
         privacy: 'Privacidad',
@@ -45,6 +48,8 @@ const LABELS = {
         services: 'Services',
         process: 'How we work (section #proceso)',
         projects: 'Projects in orbit (section #proyectos)',
+        details: 'Details',
+        extra: 'Other Quasar Devs projects (not listed in the projects section)',
         about: 'About the founder (section #sobre-mi)',
         contact: 'Contact and quotes (section #contacto)',
         privacy: 'Privacy',
@@ -96,8 +101,13 @@ export function buildKnowledge(lang: KnowledgeLang): string {
             p.tech ? `${l.tech}: ${p.tech}` : '',
             p.url && p.url !== '#' ? `${l.link}: ${p.url}` : l.soon,
         ].filter(Boolean);
-        return `- **${proj[`${p.key}_title`]}** (${proj[`${p.key}_cat`]}): ${proj[`${p.key}_desc`]} ${extra.join(' · ')}`;
+        const detail = PROJECT_DETAILS[p.key]?.[lang];
+        return [
+            `- **${proj[`${p.key}_title`]}** (${proj[`${p.key}_cat`]}): ${proj[`${p.key}_desc`]} ${extra.join(' · ')}`,
+            detail ? `  - ${l.details}: ${detail}` : '',
+        ].filter(Boolean).join('\n');
     });
+    const extraProjects = EXTRA_PROJECTS.map((p) => `- **${p.title}**: ${p[lang]}`);
 
     const contact = [
         `- ${l.email}: ${EMAIL}`,
@@ -134,6 +144,9 @@ export function buildKnowledge(lang: KnowledgeLang): string {
         '',
         `## ${l.projects}`,
         ...projects,
+        '',
+        `### ${l.extra}`,
+        ...extraProjects,
         '',
         `## ${l.about}`,
         `- ${ab.name}: ${ab.role}`,

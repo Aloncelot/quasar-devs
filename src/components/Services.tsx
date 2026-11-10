@@ -3,7 +3,7 @@
 import type { ReactNode } from 'react';
 import {
     FaDesktop, FaServer, FaLayerGroup, FaRobot,
-    FaWarehouse, FaProjectDiagram, FaBoxes, FaDolly, FaMicrochip, FaChartLine,
+    FaWarehouse, FaProjectDiagram, FaBoxes, FaDolly, FaExchangeAlt, FaChartLine,
 } from 'react-icons/fa';
 import { useLanguage } from '@/context/LanguageContext';
 import { CyberCard, CyberLink, Chip, type Accent } from '@/components/ui/Cyber';
@@ -27,7 +27,7 @@ const SUPPLY: ServiceItem[] = [
     { key: 'process', icon: <FaProjectDiagram /> },
     { key: 'wms', icon: <FaBoxes /> },
     { key: 'sorter', icon: <FaDolly /> },
-    { key: 'asrs', icon: <FaMicrochip /> },
+    { key: 'inventory', icon: <FaExchangeAlt /> },
     { key: 'data', icon: <FaChartLine /> },
 ];
 
