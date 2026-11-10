@@ -339,7 +339,7 @@ export default function Randall() {
                     <div className={styles.frame}>
                         <div className={styles.panelInner}>
                             <header className={styles.header}>
-                                <RandallSprite mood={mood === 'sleepy' ? 'idle' : mood} blink={blink} mouthOpen={mouthOpen} look={0} className={styles.headerSprite} />
+                                <RandallSprite mood={mood === 'sleepy' ? 'idle' : mood} blink={blink} mouthOpen={mouthOpen} look={0} shadow={false} className={styles.headerSprite} />
                                 <div className={styles.headerText}>
                                     <p className={styles.name}>{t('randall.name')}</p>
                                     <p className={styles.role}>

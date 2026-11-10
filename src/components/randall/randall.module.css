@@ -52,32 +52,34 @@
     outline-offset: 4px;
 }
 
-/* Flotación por "saltos" de un píxel (look retro) */
-.float .sprite { animation: rt-float 2.4s steps(1, end) infinite; }
-.hop .sprite   { animation: rt-hop 0.55s steps(4, end); }
-.shake .sprite { animation: rt-shake 0.5s steps(6, end); }
+/* Flotación por "saltos" de un píxel (look retro). Se mueve el cuerpo; la sombra se queda abajo.
+   En SVG los px de transform equivalen a celdas de la rejilla (1px = 1 píxel de Randall). */
+.body, .shadow { transform-box: fill-box; transform-origin: center; }
+.float .body   { animation: rt-float 2.4s steps(1, end) infinite; }
+.float .shadow { animation: rt-shadow 2.4s steps(1, end) infinite; }
+.hop .body     { animation: rt-hop 0.55s steps(4, end); }
+.shake .body   { animation: rt-shake 0.5s steps(6, end); }
 
 @keyframes rt-float {
     0%, 100% { transform: translateY(0); }
-    50%      { transform: translateY(-9%); }
+    50%      { transform: translateY(-1px); }
+}
+/* La sombra se encoge y se atenúa cuando Randall sube */
+@keyframes rt-shadow {
+    0%, 100% { transform: scaleX(1); opacity: 0.45; }
+    50%      { transform: scaleX(0.6); opacity: 0.25; }
 }
 @keyframes rt-hop {
     0%, 100% { transform: translateY(0); }
-    40%      { transform: translateY(-27%); }
-    70%      { transform: translateY(-9%); }
+    40%      { transform: translateY(-2px); }
+    70%      { transform: translateY(-1px); }
 }
 @keyframes rt-shake {
     0%, 100% { transform: translateX(0); }
-    20%, 60% { transform: translateX(-9%); }
-    40%, 80% { transform: translateX(9%); }
+    20%, 60% { transform: translateX(-1px); }
+    40%, 80% { transform: translateX(1px); }
 }
-
-/* Luz de la antena */
-.antenna { animation: rt-antenna 1.6s ease-in-out infinite; }
-@keyframes rt-antenna {
-    0%, 100% { opacity: 1; }
-    50%      { opacity: 0.35; }
-}
+.shadow { opacity: 0.45; }
 
 /* Puntos de "pensando" */
 .think {
@@ -88,8 +90,8 @@
     gap: 2px;
 }
 .think i {
-    width: calc(var(--rt-size) / 11);
-    height: calc(var(--rt-size) / 11);
+    width: calc(var(--rt-size) / 13);
+    height: calc(var(--rt-size) / 13);
     min-width: 3px;
     min-height: 3px;
     background: #e055ff;
@@ -372,6 +374,6 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .float .sprite, .hop .sprite, .shake .sprite, .antenna,
+    .float .body, .float .shadow, .hop .body, .shake .body,
     .panel, .bubble, .zzz { animation: none; }
 }
