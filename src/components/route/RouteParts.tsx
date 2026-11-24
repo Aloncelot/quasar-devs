@@ -173,7 +173,7 @@ export const SoftwareTerminal = () => {
 /** Plano esquemático de un CEDIS (visual del hero /supply-chain). */
 export const CedisPlan = () => {
     const { t, list } = useLanguage();
-    const [recibo, cross, storage, picking, sorter, shipping] = list('pages.sc.plan_labels');
+    const [recibo, cross, storage, picking, sorter, shipping, staging] = list('pages.sc.plan_labels');
     const label = { fill: '#93bdbd', fontSize: 11, fontFamily: 'ui-monospace, monospace' };
 
     return (
@@ -200,6 +200,9 @@ export const CedisPlan = () => {
                     {[420, 480, 540].map((x) => <rect key={x} x={x} y="380" width="40" height="14" />)}
                 </g>
                 <text x="20" y="22" {...label}>{recibo}</text>
+                {/* Staging de recibo: la mercancía espera aquí antes de pasar al cross dock */}
+                <rect x="30" y="31" width="112" height="22" fill="rgba(62,224,207,.07)" stroke="#3ee0cf" strokeOpacity=".7" strokeDasharray="2 3" />
+                <text x="38" y="46" {...label} fontSize={10}>{staging}</text>
                 <text x="418" y="368" {...label}>{shipping}</text>
                 <g fill="rgba(62,224,207,.10)" stroke="#3ee0cf" strokeWidth="1.2">
                     {[230, 270, 310, 350, 390, 430, 470, 510, 550].map((x) => <rect key={x} x={x} y="40" width="22" height="200" />)}

@@ -161,7 +161,7 @@ export const es = {
             stat3_label: "de la licitación al arranque",
             plan_title: "LAYOUT // CEDIS-01",
             plan_scale: "escala 1:500",
-            plan_labels: "RECIBO|CROSS DOCK|ALMACENAJE · RACK SELECTIVO|PICKING|SORTER / CONVEYOR|EMBARQUE",
+            plan_labels: "RECIBO|CROSS DOCK|ALMACENAJE · RACK SELECTIVO|PICKING|SORTER / CONVEYOR|EMBARQUE|STAGING",
             services_kicker: "Servicios",
             flow_kicker: "Acompañamiento",
             flow_title: "De la licitación a la puesta en marcha",

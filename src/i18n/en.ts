@@ -159,7 +159,7 @@ export const en: typeof es = {
             stat3_label: "from tender to go-live",
             plan_title: "LAYOUT // DC-01",
             plan_scale: "scale 1:500",
-            plan_labels: "RECEIVING|CROSS DOCK|STORAGE · SELECTIVE RACK|PICKING|SORTER / CONVEYOR|SHIPPING",
+            plan_labels: "RECEIVING|CROSS DOCK|STORAGE · SELECTIVE RACK|PICKING|SORTER / CONVEYOR|SHIPPING|STAGING",
             services_kicker: "Services",
             flow_kicker: "Support",
             flow_title: "From tender to go-live",
