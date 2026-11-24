@@ -343,6 +343,13 @@ body {
     box-shadow: 0 0 12px var(--cyan);
     animation: caret-blink 1.1s steps(1, end) infinite;
   }
+  /* El mismo cursor al final del título de /software y /supply-chain, en el color de cada ruta */
+  .hero-caret--route {
+    background: var(--route);
+    box-shadow: 0 0 12px var(--route);
+    /* No ocupa ancho en el renglón (margen + ancho = 0): el título se acomoda igual que sin cursor */
+    margin-right: -0.21em;
+  }
   /* Barra de las rutas: una luz recorre la línea de izquierda a derecha cada 2 s y se desvanece */
   .route-meter {
     position: relative;

@@ -85,6 +85,10 @@ export const RouteHero = ({ route, visual, secondaryHref }: HeroProps) => {
     const { t } = useLanguage();
     const k = (key: string) => t(`pages.${route}.${key}`);
     const style = ROUTE_STYLE[route];
+    const titleB = k('title_b');
+    const cut = titleB.lastIndexOf(' ') + 1;
+    const titleRest = titleB.slice(0, cut);
+    const titleLast = titleB.slice(cut);
 
     return (
         <section className={`relative overflow-x-clip pt-28 md:pt-32 ${route === 'sc' ? 'pb-[30vh]' : 'pb-20 md:pb-24'}`}>
@@ -95,7 +99,14 @@ export const RouteHero = ({ route, visual, secondaryHref }: HeroProps) => {
                         <Kicker route={route}>{k('kicker')}</Kicker>
                         <h1 className="mt-5 font-display text-[clamp(2.4rem,4.6vw,4rem)] font-bold leading-[1.06] text-white">
                             {k('title_a')}{' '}
-                            <span className={`${style.grad} bg-clip-text text-transparent`}>{k('title_b')}</span>
+                            <span className={`${style.grad} bg-clip-text text-transparent`}>
+                                {titleRest}
+                                {/* La última palabra y el cursor van juntos: el cursor nunca baja solo a otro renglón */}
+                                <span className="whitespace-nowrap">
+                                    {titleLast}
+                                    <span aria-hidden="true" className="hero-caret hero-caret--route" />
+                                </span>
+                            </span>
                         </h1>
                         <p className="mt-6 max-w-xl text-lg leading-relaxed text-dim">{k('lead')}</p>
                         <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:flex-wrap">
