@@ -213,7 +213,6 @@
     border-bottom: 1px solid color-mix(in srgb, var(--rt) 30%, transparent);
     background-image: repeating-linear-gradient(0deg, transparent 0 3px, color-mix(in srgb, var(--rt) 5%, transparent) 3px 4px);
 }
-.headerSprite { width: 2.1rem; height: 2.1rem; flex: none; }
 .headerText { flex: 1; min-width: 0; }
 .name {
     margin: 0;
@@ -377,3 +376,54 @@
     .float .body, .float .shadow, .hop .body, .shake .body,
     .panel, .bubble, .zzz { animation: none; }
 }
+
+/* ---------------- Botón para ocultar (aparece al pasar el cursor) ---------------- */
+.hideBtn {
+    position: absolute;
+    left: calc(var(--rt-size) - 0.35rem);
+    bottom: calc(var(--rt-size) - 0.55rem);
+    z-index: 2;
+    display: grid;
+    place-items: center;
+    width: 1.35rem;
+    height: 1.35rem;
+    padding: 0;
+    border: 1px solid color-mix(in srgb, var(--rt) 55%, transparent);
+    border-radius: 50%;
+    background: #0d0a26;
+    color: var(--rt);
+    cursor: pointer;
+    opacity: 0;
+    transform: scale(0.8);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+.root:hover .hideBtn,
+.hideBtn:focus-visible {
+    opacity: 1;
+    transform: scale(1);
+}
+.hideBtn:hover { background: var(--rt-deep); }
+.hideBtn:focus-visible { outline: 2px solid var(--rt); outline-offset: 2px; }
+@media (hover: none) {
+    .hideBtn { opacity: 0.85; transform: scale(1); }
+}
+
+/* ---------------- Oculto: se asoma por el borde izquierdo ---------------- */
+.hidden {
+    left: 0;
+}
+.hidden .avatar {
+    transform: translateX(-38%) rotate(10deg);
+    transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.hidden .avatar:hover,
+.hidden .avatar:focus-visible {
+    transform: translateX(-18%) rotate(4deg);
+}
+.hidden .sprite {
+    filter: drop-shadow(0 0 4px color-mix(in srgb, var(--rt) 40%, transparent));
+}
+@media (prefers-reduced-motion: reduce) {
+    .hideBtn, .hidden .avatar { transition: none; }
+}
+

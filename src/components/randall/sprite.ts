@@ -79,6 +79,8 @@ export interface FrameOptions {
     mouthOpen?: boolean;
     /** Mirada horizontal: -1 izquierda, 0 centro, 1 derecha. */
     look?: -1 | 0 | 1;
+    /** Mirada vertical: 0 al frente, 1 hacia abajo (el display no deja subirlos más). */
+    lookY?: 0 | 1;
     /** Fotograma del saludo con la mano (null = manos abajo). */
     wave?: 0 | 1 | null;
 }
@@ -89,10 +91,10 @@ export interface FrameOptions {
  */
 type Spot = [x: number, y: number];
 
-const eyesOpen = (l: number): Spot[] => [[4 + l, 3], [4 + l, 4], [8 + l, 3], [8 + l, 4]];
+const eyesOpen = (l: number, ly = 0): Spot[] => [[4 + l, 3 + ly], [4 + l, 4 + ly], [8 + l, 3 + ly], [8 + l, 4 + ly]];
 const eyesClosed: Spot[] = [[3, 4], [4, 4], [8, 4], [9, 4]];
 
-function face({ mood, blink, mouthOpen, look = 0 }: FrameOptions): Spot[] {
+function face({ mood, blink, mouthOpen, look = 0, lookY = 0 }: FrameOptions): Spot[] {
     switch (mood) {
         case 'happy':
             return [[3, 4], [4, 3], [5, 4], [7, 4], [8, 3], [9, 4], [6, 5]];
@@ -113,7 +115,7 @@ function face({ mood, blink, mouthOpen, look = 0 }: FrameOptions): Spot[] {
             return [...eyesClosed];
         case 'idle':
         default:
-            return blink ? eyesClosed : eyesOpen(look);
+            return blink ? eyesClosed : eyesOpen(look, lookY);
     }
 }
 

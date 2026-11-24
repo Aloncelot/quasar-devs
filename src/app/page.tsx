@@ -1,9 +1,8 @@
-import { ParticlesScene } from '@/components/ParticlesScene';
+import { ParticlesSceneLazy } from '@/components/ParticlesSceneLazy';
 import { Hero } from '@/components/Hero';
-import { Services } from '@/components/Services';
-import { Process } from '@/components/Process';
+import { RoutesSplit } from '@/components/RoutesSplit';
 import { Projects } from '@/components/Projects';
-import { About } from '@/components/About';
+import { AboutTeaser } from '@/components/AboutTeaser';
 import { Contact } from '@/components/Contact';
 import { Footer } from '@/components/Footer';
 import { FloatingLink } from '@/components/FloatingLink';
@@ -14,12 +13,12 @@ export default function Home() {
     <>
       <main id="contenido" className="relative w-full">
         {/* Fondo fijo: la galaxia que recorre la página mientras haces scroll */}
-        <ParticlesScene />
+        <ParticlesSceneLazy />
         <Hero />
-        <Services />
-        <Process />
+        {/* Resumen de las dos rutas; cada una tiene su página (/software y /supply-chain) */}
+        <RoutesSplit />
         <Projects />
-        <About />
+        <AboutTeaser />
         <Contact />
       </main>
       <Footer />

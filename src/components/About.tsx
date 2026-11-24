@@ -6,6 +6,7 @@ import { FaMapMarkerAlt, FaLanguage } from 'react-icons/fa';
 import { useLanguage } from '@/context/LanguageContext';
 import { CyberCard, CyberLink, Chip, type Accent } from '@/components/ui/Cyber';
 import { Skeleton } from '@/components/ui/Skeleton';
+import { Breadcrumb } from '@/components/route/RouteParts';
 
 const STATS = [
     { value: 'about.stat1_value', label: 'about.stat1_label', color: 'text-magenta-neon' },
@@ -19,12 +20,19 @@ const STACKS: { list: string; label: string; accent: Accent }[] = [
     { list: 'about.stack_sc', label: 'about.stack_sc_label', accent: 'magenta' },
 ];
 
-export const About = () => {
+/** `asPage`: versión completa de /sobre-mi (título h1 y migas). */
+export const About = ({ asPage = false }: { asPage?: boolean }) => {
+    const Heading = asPage ? 'h1' : 'h2';
     const { t, list } = useLanguage();
     const [photoLoaded, setPhotoLoaded] = useState(false);
 
     return (
-        <section id="sobre-mi" className="veil relative scroll-mt-16 py-24 md:py-32">
+        <section id="sobre-mi" className={`veil relative scroll-mt-16 ${asPage ? 'pb-24 pt-28 md:pb-32 md:pt-32' : 'py-24 md:py-32'}`}>
+            {asPage && (
+                <div className="mx-auto mb-10 max-w-7xl px-6 md:px-10">
+                    <Breadcrumb current={t('pages.about.crumb')} />
+                </div>
+            )}
             <div className="mx-auto grid max-w-7xl gap-14 px-6 md:px-10 lg:grid-cols-12 lg:gap-16">
                 {/* Retrato: en celular y tablet, foto chica junto a los datos; en escritorio, retrato grande */}
                 <div className="flex items-center gap-5 lg:col-span-4 lg:block">
@@ -56,11 +64,11 @@ export const About = () => {
                     </ul>
                 </div>
 
-                {/* Texto */}
-                <div className="lg:col-span-8">
-                    <h2 className="max-w-2xl font-display text-4xl font-bold leading-tight text-white md:text-5xl">
+                {/* Texto (en /sobre-mi va sobre un panel translúcido para leerse sobre los asteroides) */}
+                <div className={`lg:col-span-8 ${asPage ? 'about-glass p-6 md:p-10' : ''}`}>
+                    <Heading className="max-w-2xl font-display text-4xl font-bold leading-tight text-white md:text-5xl">
                         {t('about.title')}
-                    </h2>
+                    </Heading>
                     <p className="mt-4 font-display text-xl font-semibold text-cyan-neon">
                         {t('about.name')}
                         <span className="font-medium text-dim"> · {t('about.role')}</span>

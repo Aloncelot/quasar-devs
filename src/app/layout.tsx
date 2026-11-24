@@ -80,7 +80,9 @@ const jsonLd = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="es" className={`${gibed.variable} ${display.variable} ${body.variable}`}>
+    // data-scroll-behavior: el scroll suave (globals.css) queda para las anclas de la misma página;
+    // al cambiar de página, Next salta directo arriba en vez de animar el scroll (si no, terminaba en el footer).
+    <html lang="es" data-scroll-behavior="smooth" className={`${gibed.variable} ${display.variable} ${body.variable}`}>
       <body className="bg-void font-body text-ink">
         <a
           href="#contenido"

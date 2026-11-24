@@ -108,6 +108,39 @@ const ProjectCard = ({ data, btn, soon, onHover }: {
     );
 };
 
+/** Cuadrícula sencilla con los proyectos indicados (páginas de cada ruta). */
+// En cada página de ruta, las tarjetas toman el color de la ruta
+const ROUTE_TINT = {
+    sw: { accent: 'violet' as const, color: '#b9a3ff' },
+    sc: { accent: 'teal' as const, color: '#3ee0cf' },
+};
+
+export const ProjectGrid = ({ keys, route }: { keys: string[]; route?: 'sw' | 'sc' }) => {
+    const { t } = useLanguage();
+    const items = keys
+        .map((key) => PROJECTS.find((p) => p.key === key))
+        .filter((p): p is ProjectItem => Boolean(p))
+        .map((p) => (route ? { ...p, ...ROUTE_TINT[route] } : p));
+    return (
+        <ul className={`grid gap-6 sm:grid-cols-2 ${items.length > 2 ? 'lg:grid-cols-4' : ''}`}>
+            {items.map((item) => (
+                <li key={item.key}>
+                    <ProjectCard
+                        data={{
+                            item,
+                            title: t(`projects.${item.key}_title`),
+                            category: t(`projects.${item.key}_cat`),
+                            description: t(`projects.${item.key}_desc`),
+                        }}
+                        btn={t('projects.btn_access')}
+                        soon={t('projects.coming_soon')}
+                    />
+                </li>
+            ))}
+        </ul>
+    );
+};
+
 export const Projects = () => {
     const { t } = useLanguage();
     const reduceMotion = useReducedMotion();
@@ -123,7 +156,8 @@ export const Projects = () => {
     /* ---- medida del contenedor para repartir la ruta ---- */
     const viewportRef = useRef<HTMLDivElement>(null);
     const [viewW, setViewW] = useState(0);
-    const [scroll, setScroll] = useState({ left: 0, max: 0 });
+    /** Solo lo que pinta la interfaz (no la posición exacta): así el scroll no re-renderiza la sección en cada evento. */
+    const [scroll, setScroll] = useState({ overflow: false, atStart: true, atEnd: true });
     const [hovered, setHovered] = useState<number | null>(null);
 
     useEffect(() => {
@@ -131,7 +165,11 @@ export const Projects = () => {
         if (!el) return;
         const update = () => {
             setViewW(el.clientWidth);
-            setScroll({ left: el.scrollLeft, max: el.scrollWidth - el.clientWidth });
+            const max = el.scrollWidth - el.clientWidth;
+            const next = { overflow: max > 4, atStart: el.scrollLeft <= 4, atEnd: el.scrollLeft >= max - 4 };
+            setScroll((prev) =>
+                prev.overflow === next.overflow && prev.atStart === next.atStart && prev.atEnd === next.atEnd ? prev : next
+            );
         };
         update();
         const observer = new ResizeObserver(update);
@@ -156,7 +194,7 @@ export const Projects = () => {
         return { trackW, nodes, path };
     }, [viewW, n]);
 
-    const overflow = scroll.max > 4;
+    const { overflow } = scroll;
     const scrollBy = (dir: 1 | -1) =>
         viewportRef.current?.scrollBy({ left: dir * MIN_GAP * 2, behavior: animate ? 'smooth' : 'auto' });
 
@@ -177,7 +215,7 @@ export const Projects = () => {
                             <button
                                 type="button"
                                 onClick={() => scrollBy(-1)}
-                                disabled={scroll.left <= 4}
+                                disabled={scroll.atStart}
                                 aria-label={t('projects.prev')}
                                 className="rounded-sm border border-violet-neon/40 p-3 text-cyan-neon transition-colors hover:border-cyan-neon disabled:opacity-30"
                             >
@@ -186,7 +224,7 @@ export const Projects = () => {
                             <button
                                 type="button"
                                 onClick={() => scrollBy(1)}
-                                disabled={scroll.left >= scroll.max - 4}
+                                disabled={scroll.atEnd}
                                 aria-label={t('projects.next')}
                                 className="rounded-sm border border-violet-neon/40 p-3 text-cyan-neon transition-colors hover:border-cyan-neon disabled:opacity-30"
                             >

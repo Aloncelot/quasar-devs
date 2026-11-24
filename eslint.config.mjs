@@ -14,6 +14,8 @@ const eslintConfig = defineConfig([
     "next-env.d.ts",
     // Respaldo del código anterior al rediseño (se puede borrar)
     "_backup_pre_rediseno/**",
+    // Save state antes de las páginas de ruta (para regresar a ese punto)
+    "_save_state_*/**",
   ]),
 ]);
 

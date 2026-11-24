@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useId, useRef, useState, type FormEvent } from 'react';
-import { FaPaperPlane, FaTimes, FaRedo } from 'react-icons/fa';
+import { FaPaperPlane, FaTimes, FaRedo, FaEyeSlash } from 'react-icons/fa';
 import { useReducedMotion } from 'framer-motion';
 import { useLanguage } from '@/context/LanguageContext';
 import { RANDALL_API_URL } from '@/lib/config';
@@ -21,6 +21,8 @@ interface Message {
 
 const HISTORY_KEY = 'randall-history';
 const GREETED_KEY = 'randall-greeted';
+/** Preferencia de ocultar a Randall (se recuerda entre visitas). */
+const HIDDEN_KEY = 'randall-hidden';
 const MAX_INPUT = 600;
 const SLEEP_AFTER_MS = 45_000;
 const SERVER_MOODS: Mood[] = ['idle', 'happy', 'surprised', 'sad', 'sleepy', 'wink', 'thinking'];
@@ -42,6 +44,24 @@ const saveHistory = (messages: Message[]) => {
         /* ignorar */
     }
 };
+const hiddenPref = {
+    get: () => {
+        try {
+            return window.localStorage.getItem(HIDDEN_KEY) === '1';
+        } catch {
+            return false;
+        }
+    },
+    set: (value: boolean) => {
+        try {
+            if (value) window.localStorage.setItem(HIDDEN_KEY, '1');
+            else window.localStorage.removeItem(HIDDEN_KEY);
+        } catch {
+            /* ignorar */
+        }
+    },
+};
+
 const flag = {
     get: (key: string) => {
         try {
@@ -78,6 +98,9 @@ export default function Randall() {
     const [blink, setBlink] = useState(false);
     const [mouthOpen, setMouthOpen] = useState(false);
     const [look, setLook] = useState<-1 | 0 | 1>(0);
+    const [lookY, setLookY] = useState<0 | 1>(0);
+    /** Oculto: solo se asoma por el borde izquierdo y sigue el cursor con la vista. */
+    const [hidden, setHidden] = useState(hiddenPref.get);
     const [wave, setWave] = useState<0 | 1 | null>(null);
     const [bump, setBump] = useState<'hop' | 'shake' | null>(null);
 
@@ -177,7 +200,9 @@ export default function Randall() {
                 const rect = avatarRef.current?.getBoundingClientRect();
                 if (!rect) return;
                 const dx = e.clientX - (rect.left + rect.width / 2);
+                const dy = e.clientY - (rect.top + rect.height / 2);
                 setLook(dx > 80 ? 1 : dx < -80 ? -1 : 0);
+                setLookY(dy > 60 ? 1 : 0);
             });
         };
         const sleepCheck = window.setInterval(() => {
@@ -200,7 +225,7 @@ export default function Randall() {
 
     /* ---------- saludo inicial (una vez por sesión) ---------- */
     useEffect(() => {
-        if (flag.get(GREETED_KEY)) return;
+        if (flag.get(GREETED_KEY) || hiddenPref.get()) return;
         const show = window.setTimeout(() => {
             if (openRef.current) return;
             flag.set(GREETED_KEY);
@@ -249,7 +274,12 @@ export default function Randall() {
 
     // Otros componentes (p. ej. la tarjeta de Randall en Proyectos) pueden abrir el chat con un evento
     useEffect(() => {
-        const onOpen = () => openPanel();
+        const onOpen = () => {
+            // si estaba oculto, vuelve a su lugar
+            setHidden(false);
+            hiddenPref.set(false);
+            openPanel();
+        };
         window.addEventListener(RANDALL_OPEN_EVENT, onOpen);
         return () => window.removeEventListener(RANDALL_OPEN_EVENT, onOpen);
     }, [openPanel]);
@@ -333,6 +363,19 @@ export default function Randall() {
         void ask(input);
     };
 
+    const hide = () => {
+        setOpen(false);
+        setGreeting(false);
+        setHidden(true);
+        hiddenPref.set(true);
+    };
+    const unhide = () => {
+        setHidden(false);
+        hiddenPref.set(false);
+        express('happy', 1400);
+        doWave();
+    };
+
     const reset = () => {
         setMessages([]);
         setTyping(null);
@@ -356,14 +399,13 @@ export default function Randall() {
     ].join(' ');
 
     return (
-        <div className={styles.root}>
+        <div className={`${styles.root} ${hidden ? styles.hidden : ''}`}>
             {/* ---------- Panel de chat ---------- */}
             {open && (
                 <section id={panelId} className={styles.panel} aria-label={t('randall.log')}>
                     <div className={styles.frame}>
                         <div className={styles.panelInner}>
                             <header className={styles.header}>
-                                <RandallSprite mood={mood === 'sleepy' ? 'idle' : mood} blink={blink} mouthOpen={mouthOpen} look={0} shadow={false} className={styles.headerSprite} />
                                 <div className={styles.headerText}>
                                     <p className={styles.name}>{t('randall.name')}</p>
                                     <p className={styles.role}>
@@ -376,6 +418,9 @@ export default function Randall() {
                                         <FaRedo aria-hidden="true" size={11} />
                                     </button>
                                 )}
+                                <button type="button" onClick={hide} className={styles.iconBtn} aria-label={t('randall.hide')} title={t('randall.hide')}>
+                                    <FaEyeSlash aria-hidden="true" size={12} />
+                                </button>
                                 <button type="button" onClick={closePanel} className={styles.iconBtn} aria-label={t('randall.close')}>
                                     <FaTimes aria-hidden="true" size={12} />
                                 </button>
@@ -437,7 +482,7 @@ export default function Randall() {
             )}
 
             {/* ---------- Globo de saludo ---------- */}
-            {greeting && !open && (
+            {greeting && !open && !hidden && (
                 <div className={styles.bubble} role="status">
                     <button type="button" className={styles.bubbleText} onClick={openPanel}>
                         {t('randall.greeting')}
@@ -448,12 +493,19 @@ export default function Randall() {
                 </div>
             )}
 
+            {/* ---------- Ocultar (junto al avatar, al pasar el cursor o con el teclado) ---------- */}
+            {!hidden && !open && (
+                <button type="button" className={styles.hideBtn} onClick={hide} aria-label={t('randall.hide')} title={t('randall.hide')}>
+                    <FaEyeSlash aria-hidden="true" size={10} />
+                </button>
+            )}
+
             {/* ---------- Avatar ---------- */}
             <button
                 ref={avatarRef}
                 type="button"
                 className={avatarClass}
-                onClick={() => (open ? closePanel() : openPanel())}
+                onClick={() => (hidden ? unhide() : open ? closePanel() : openPanel())}
                 onMouseEnter={() => {
                     if (moodRef.current === 'idle' || moodRef.current === 'sleepy') {
                         express('happy', 1200);
@@ -462,9 +514,9 @@ export default function Randall() {
                 }}
                 aria-expanded={open}
                 aria-controls={open ? panelId : undefined}
-                aria-label={open ? t('randall.close') : t('randall.open')}
+                aria-label={hidden ? t('randall.show') : open ? t('randall.close') : t('randall.open')}
             >
-                <RandallSprite mood={mood} blink={blink} mouthOpen={mouthOpen} look={look} wave={wave} className={styles.sprite} />
+                <RandallSprite mood={mood} blink={blink} mouthOpen={mouthOpen} look={look} lookY={lookY} wave={hidden ? null : wave} shadow={!hidden} className={styles.sprite} />
                 {mood === 'thinking' && (
                     <span className={styles.think} aria-hidden="true">
                         <i />

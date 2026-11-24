@@ -7,7 +7,7 @@ const isProd = process.env.NODE_ENV === "production";
  * - 'unsafe-inline' en script-src es necesario para los scripts de arranque de Next.js
  *   (se puede endurecer con nonces + middleware más adelante).
  * - connect-src solo permite el propio sitio y el backend de Randall (el formulario de contacto usa /api/contact).
- * - worker-src/blob: lo usan three.js / drei.
+ * - worker-src/blob: lo usa three.js.
  * Solo se aplica en producción para no romper el HMR de `next dev`.
  */
 /** Origen del backend de Randall (chatbot) para permitirlo en connect-src. */

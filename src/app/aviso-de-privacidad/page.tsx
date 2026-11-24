@@ -13,7 +13,7 @@ import { EMAIL } from '@/lib/config';
  *  - Recomendable: revisión por un abogado.
  *  - Actualizar UPDATED cada vez que cambie el contenido.
  */
-const UPDATED = '28 de octubre de 2026';
+const UPDATED = '21 de noviembre de 2026';
 const RESPONSABLE_DOMICILIO = 'Ciudad de México, México';
 
 export const metadata: Metadata = {
@@ -182,6 +182,11 @@ export default function AvisoDePrivacidad() {
                                     <td><code>randall-history</code></td>
                                     <td>Conservar la conversación con Randall mientras navegas.</td>
                                     <td>Se borra al cerrar la pestaña.</td>
+                                </tr>
+                                <tr>
+                                    <td><code>randall-hidden</code></td>
+                                    <td>Recordar que ocultaste a Randall, para que siga oculto en tus próximas visitas.</td>
+                                    <td>Hasta que lo vuelvas a mostrar o borres los datos del navegador.</td>
                                 </tr>
                             </tbody>
                         </table>

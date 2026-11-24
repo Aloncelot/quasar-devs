@@ -1,6 +1,7 @@
 import type { ReactNode, ButtonHTMLAttributes } from 'react';
+import { SiteLink } from './SiteLink';
 
-export type Accent = 'cyan' | 'magenta' | 'violet' | 'azure';
+export type Accent = 'cyan' | 'magenta' | 'violet' | 'azure' | 'teal';
 
 // Las clases se escriben completas para que Tailwind/PostCSS no las elimine.
 const CARD_CLASS: Record<Accent, string> = {
@@ -8,6 +9,7 @@ const CARD_CLASS: Record<Accent, string> = {
     magenta: 'cyber-card cyber-card--magenta',
     violet: 'cyber-card cyber-card--violet',
     azure: 'cyber-card cyber-card--azure',
+    teal: 'cyber-card cyber-card--teal',
 };
 
 const CHIP_CLASS: Record<Accent, string> = {
@@ -15,6 +17,7 @@ const CHIP_CLASS: Record<Accent, string> = {
     magenta: 'chip chip--magenta',
     violet: 'chip chip--violet',
     azure: 'chip',
+    teal: 'chip chip--teal',
 };
 
 interface CardProps {
@@ -41,14 +44,14 @@ export const CyberCard = ({
 
     if (href) {
         return (
-            <a
+            <SiteLink
                 href={href}
                 className={classes}
                 aria-label={ariaLabel}
                 {...(external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
             >
                 {inner}
-            </a>
+            </SiteLink>
         );
     }
     return <div className={classes}>{inner}</div>;
@@ -59,16 +62,26 @@ export const Chip = ({ children, accent = 'cyan' }: { children: ReactNode; accen
     <span className={CHIP_CLASS[accent]}>{children}</span>
 );
 
+export type ButtonAccent = 'cyan' | 'magenta' | 'violet' | 'teal';
+
+// Clases completas para que Tailwind no las elimine.
+const BTN_ACCENT: Record<ButtonAccent, string> = {
+    cyan: '',
+    magenta: 'cyber-btn--magenta',
+    violet: 'cyber-btn--violet',
+    teal: 'cyber-btn--teal',
+};
+
 interface ButtonBaseProps {
     variant?: 'solid' | 'ghost';
-    accent?: 'cyan' | 'magenta';
+    accent?: ButtonAccent;
     className?: string;
     children: ReactNode;
 }
 
 const buttonClass = ({ variant = 'solid', accent = 'cyan', className = '' }: Omit<ButtonBaseProps, 'children'>) => {
     const variantClass = variant === 'solid' ? 'cyber-btn--solid' : 'cyber-btn--ghost';
-    const accentClass = accent === 'magenta' ? 'cyber-btn--magenta' : '';
+    const accentClass = BTN_ACCENT[accent];
     return `cyber-btn ${variantClass} ${accentClass} ${className}`.trim();
 };
 
@@ -80,14 +93,14 @@ type LinkButtonProps = ButtonBaseProps & {
 
 /** Botón-enlace cyberpunk. */
 export const CyberLink = ({ href, external, ariaLabel, children, ...base }: LinkButtonProps) => (
-    <a
+    <SiteLink
         href={href}
         className={buttonClass(base)}
         aria-label={ariaLabel}
         {...(external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
     >
         <span className="cyber-btn__face">{children}</span>
-    </a>
+    </SiteLink>
 );
 
 type ButtonProps = ButtonBaseProps & Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'className' | 'children'>;

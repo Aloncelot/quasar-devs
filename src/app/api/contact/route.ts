@@ -1,6 +1,7 @@
 import { es } from '@/i18n/es';
 import { en } from '@/i18n/en';
 import { allow, clientIp } from '@/lib/rateLimit';
+import { CONTACT_MAX as MAX, EMAIL_RE, isProjectType } from '@/lib/contactRules';
 
 /**
  * POST /api/contact — envía el formulario de contacto por EmailJS desde el servidor.
@@ -13,9 +14,6 @@ import { allow, clientIp } from '@/lib/rateLimit';
  */
 export const dynamic = 'force-dynamic';
 
-const MAX = { name: 80, email: 120, message: 2000 } as const;
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
-const TYPES = ['software', 'supply', 'both', 'other'] as const;
 const MIN_FILL_MS = 3_000; // un humano tarda más de 3 s en llenar el formulario
 const MAX_BODY_BYTES = 10_000;
 
@@ -52,7 +50,7 @@ export async function POST(request: Request) {
     const name = clean(raw.name, MAX.name);
     const email = clean(raw.email, MAX.email);
     const message = clean(raw.message, MAX.message);
-    const type = TYPES.includes(raw.type as (typeof TYPES)[number]) ? (raw.type as (typeof TYPES)[number]) : 'other';
+    const type = isProjectType(raw.type) ? raw.type : 'other';
     const startedAt = Number(raw.startedAt);
 
     if (!name || !EMAIL_RE.test(email) || !message || raw.consent !== true) {

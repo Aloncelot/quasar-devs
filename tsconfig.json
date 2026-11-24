@@ -30,5 +30,5 @@
     ".next/dev/types/**/*.ts",
     "**/*.mts"
   ],
-  "exclude": ["node_modules", "_backup_pre_rediseno"]
+  "exclude": ["node_modules", "_backup_pre_rediseno", "_save_state_*"]
 }

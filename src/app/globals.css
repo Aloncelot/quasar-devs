@@ -14,6 +14,9 @@
   --azure: #3c8dff;
   --violet: #8a63ff;
   --magenta: #e055ff;
+  --teal: #3ee0cf;     /* ruta supply chain */
+  --mint: #2bd4a4;
+  --veil-rgb: 6 4 20;  /* tono de los velos; cada ruta lo cambia */
   --ink: #e9ecff;
   --dim: #9ca3d9;
 }
@@ -123,6 +126,7 @@ body {
   .cyber-card--magenta { --c: var(--magenta); --c2: var(--cyan); }
   .cyber-card--violet  { --c: var(--violet);  --c2: var(--cyan); }
   .cyber-card--azure   { --c: var(--azure);   --c2: var(--magenta); }
+  .cyber-card--teal    { --c: var(--teal);    --c2: var(--mint); }
 
   .cyber-card__face {
     position: relative;
@@ -183,6 +187,8 @@ body {
     cursor: pointer;
   }
   .cyber-btn--magenta { --c: var(--magenta); --c2: var(--cyan); }
+  .cyber-btn--violet  { --c: var(--violet);  --c2: var(--magenta); }
+  .cyber-btn--teal    { --c: var(--teal);    --c2: var(--mint); }
 
   .cyber-btn__face {
     position: relative;
@@ -414,6 +420,12 @@ body {
   .cyber-btn--solid.cyber-btn--magenta .cyber-btn__face::before {
     background: linear-gradient(135deg, var(--magenta), var(--violet));
   }
+  .cyber-btn--solid.cyber-btn--violet .cyber-btn__face::before {
+    background: linear-gradient(135deg, var(--violet), var(--magenta));
+  }
+  .cyber-btn--solid.cyber-btn--teal .cyber-btn__face::before {
+    background: linear-gradient(135deg, var(--teal), var(--mint));
+  }
 
   .cyber-btn:is(:hover, :focus-visible):not(:disabled):not([aria-disabled="true"]) {
     animation:
@@ -478,6 +490,7 @@ body {
   }
   .chip--magenta { --c: var(--magenta); }
   .chip--violet  { --c: var(--violet); }
+  .chip--teal    { --c: var(--teal); }
 
   /* Campos de formulario */
   .field {
@@ -505,10 +518,10 @@ body {
 
   /* Velo translúcido sobre el campo de estrellas fijo */
   .veil {
-    background: linear-gradient(180deg, rgba(6, 4, 20, 0.62), rgba(6, 4, 20, 0.84));
+    background: linear-gradient(180deg, rgb(var(--veil-rgb) / 0.62), rgb(var(--veil-rgb) / 0.84));
   }
   .veil-deep {
-    background: linear-gradient(180deg, rgba(6, 4, 20, 0.84), rgba(10, 6, 32, 0.9));
+    background: linear-gradient(180deg, rgb(var(--veil-rgb) / 0.84), rgb(var(--veil-rgb) / 0.92));
   }
 
   /* Wordmark del hero: se enciende como un letrero de neón */
@@ -637,4 +650,249 @@ body {
   .cyber-btn:is(:hover, :focus-visible) {
     filter: drop-shadow(0 0 12px color-mix(in srgb, var(--c) 70%, transparent));
   }
+}
+
+/* ------------------------------------------------------------------
+   Rutas: software (púrpura oscuro) y supply chain (verde azulado oscuro).
+   .theme-* va en el <main> de cada página de ruta; .route-backdrop es
+   su fondo fijo (en lugar de la galaxia de la página principal).
+------------------------------------------------------------------- */
+.theme-sw { --panel: #120a30; --panel-2: #1a0e42; --veil-rgb: 11 6 33; --route: var(--violet); --route-2: var(--magenta); --route-ink: #b9a3ff; }
+.theme-sc { --panel: #04191c; --panel-2: #072a2c; --veil-rgb: 3 22 26; --route: var(--teal); --route-2: var(--mint); --route-ink: #8ff0e4; --dim: #93bdbd; }
+
+.route-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: -10;
+  pointer-events: none;
+}
+.theme-sw .route-backdrop {
+  background:
+    radial-gradient(900px 600px at 82% 6%, rgb(224 85 255 / 0.16), transparent 70%),
+    radial-gradient(800px 700px at 8% 62%, rgb(138 99 255 / 0.14), transparent 70%),
+    #0b0621;
+}
+.theme-sc .route-backdrop {
+  background:
+    radial-gradient(900px 600px at 82% 6%, rgb(62 224 207 / 0.14), transparent 70%),
+    radial-gradient(800px 700px at 8% 62%, rgb(43 212 164 / 0.09), transparent 70%),
+    #03161a;
+}
+/* Campo de estrellas en CSS (estático, muy ligero) */
+.route-backdrop::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0.55;
+  background-image:
+    radial-gradient(1px 1px at 20px 30px, #fff8, transparent),
+    radial-gradient(1px 1px at 140px 90px, #fff6, transparent),
+    radial-gradient(1.5px 1.5px at 260px 160px, #fffa, transparent),
+    radial-gradient(1px 1px at 330px 40px, #fff5, transparent),
+    radial-gradient(1px 1px at 80px 200px, #fff7, transparent);
+  background-size: 380px 240px;
+}
+
+/* Paneles de la sección "Dos rutas" en la página principal */
+.route-panel {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+.route-panel--sw { background: linear-gradient(160deg, rgb(28 13 68 / 0.92), rgb(11 6 33 / 0.92) 70%); }
+.route-panel--sc { background: linear-gradient(160deg, rgb(6 54 59 / 0.92), rgb(3 22 26 / 0.92) 70%); }
+
+/* Terminal y plano de las páginas de ruta */
+.term-line { white-space: pre; }
+.term-cursor {
+  display: inline-block;
+  width: 0.6em;
+  height: 1.1em;
+  vertical-align: -0.2em;
+  background: var(--route);
+  animation: caret-blink 1s steps(1) infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .term-cursor { animation: none; }
+}
+
+/* /sobre-mi: fondo más claro (asteroides en canvas encima de este degradado,
+   que también es lo que se ve sin JavaScript) */
+.theme-about { --veil-rgb: 30 14 62; }
+.about-sky {
+  position: fixed;
+  inset: 0;
+  z-index: -11;
+  background: linear-gradient(180deg, #2b1a5c 0%, #46267a 30%, #6e3592 60%, #a04a9e 82%, #d06aa6 100%);
+}
+.theme-about .veil {
+  background: linear-gradient(180deg, rgb(var(--veil-rgb) / 0.28), rgb(var(--veil-rgb) / 0.5));
+}
+.theme-about .veil-deep {
+  background: linear-gradient(180deg, rgb(var(--veil-rgb) / 0.55), rgb(var(--veil-rgb) / 0.72));
+}
+
+/* En las rutas, velos un poco más ligeros para que se vea la escena */
+.theme-sw .veil,
+.theme-sc .veil {
+  background: linear-gradient(180deg, rgb(var(--veil-rgb) / 0.5), rgb(var(--veil-rgb) / 0.76));
+}
+
+/* Estrellas fugaces del fondo de /software */
+.route-backdrop::after {
+  content: "";
+  position: absolute;
+  top: 12%;
+  left: 70%;
+  width: 140px;
+  height: 1.5px;
+  background: linear-gradient(90deg, rgb(255 255 255 / 0.9), transparent);
+  transform: rotate(-24deg);
+  opacity: 0;
+  animation: shooting-star 9s ease-in 2s infinite;
+}
+@keyframes shooting-star {
+  0%   { opacity: 0; transform: rotate(-24deg) translateX(0); }
+  2%   { opacity: 1; }
+  9%   { opacity: 0; transform: rotate(-24deg) translateX(-520px); }
+  100% { opacity: 0; transform: rotate(-24deg) translateX(-520px); }
+}
+.route-backdrop::before {
+  animation: star-drift 120s linear infinite;
+}
+@keyframes star-drift { to { background-position: -380px 240px; } }
+@media (prefers-reduced-motion: reduce) {
+  .route-backdrop::before,
+  .route-backdrop::after { animation: none; }
+}
+
+/* Enlace de la página actual en el menú */
+.nav-link[aria-current="page"] { color: #fff; }
+.nav-link[aria-current="page"]::after { transform: scaleX(1); }
+
+/* Flujo de material del plano CEDIS */
+.flow-dash {
+  stroke-dasharray: 10 6;
+  animation: flow-dash 1.4s linear infinite;
+}
+@keyframes flow-dash { from { stroke-dashoffset: 32; } to { stroke-dashoffset: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .flow-dash { animation: none; }
+}
+
+/* Panel translúcido del texto en /sobre-mi */
+.about-glass {
+  background: rgb(30 14 62 / 0.55);
+  border: 1px solid rgb(138 99 255 / 0.25);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  clip-path: polygon(18px 0, 100% 0, 100% calc(100% - 18px), calc(100% - 18px) 100%, 0 100%, 0 18px);
+}
+
+/* Línea punteada en movimiento de los pasos (proceso y licitación) */
+.dash-line {
+  height: 1px;
+  background: repeating-linear-gradient(90deg, var(--dash, var(--violet)) 0 6px, transparent 6px 12px);
+  background-size: 12px 1px;
+  opacity: 0.75;
+  animation: dash-run 0.9s linear infinite;
+}
+@keyframes dash-run { to { background-position: 12px 0; } }
+
+/* Franja final de las páginas de ruta: mismo tono con el que termina el contacto */
+.veil-tail { background: rgb(var(--veil-rgb) / 0.92); }
+
+/* Agujero negro de /software: fijo en pantalla como los fondos de las demás páginas */
+.blackhole-fixed {
+  position: fixed;
+  z-index: -9;
+  left: 86%;
+  top: 19vh;
+  width: 95vw;
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+}
+@media (min-width: 1024px) {
+  .blackhole-fixed {
+    left: 72%;
+    top: 43vh;
+    width: min(58vw, 105vh);
+  }
+}
+
+/* Paneles de "Dos rutas": brillo suave al pasar el cursor */
+.route-panel {
+  --glow: var(--violet);
+  transition: border-color 0.35s ease, box-shadow 0.45s ease, transform 0.35s ease;
+}
+.route-panel--sc { --glow: var(--teal); }
+.route-panel:is(:hover, :focus-within) {
+  border-color: var(--glow);
+  transform: translateY(-4px);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--glow) 45%, transparent),
+    0 0 34px color-mix(in srgb, var(--glow) 28%, transparent),
+    inset 0 0 60px color-mix(in srgb, var(--glow) 10%, transparent);
+}
+.route-panel > [aria-hidden="true"]:first-child { transition: opacity 0.45s ease, transform 0.6s ease; }
+.route-panel:is(:hover, :focus-within) > [aria-hidden="true"]:first-child {
+  opacity: 0.14;
+  transform: scale(1.06) rotate(-4deg);
+}
+@media (prefers-reduced-motion: reduce) {
+  .dash-line { animation: none; }
+  .route-panel, .route-panel > [aria-hidden="true"]:first-child { transition: none; }
+  .route-panel:is(:hover, :focus-within) { transform: none; }
+}
+
+/* Línea con luz que viaja de izquierda a derecha (títulos de las cards de ruta) */
+.kicker-meter {
+  position: relative;
+  display: block;
+  width: 5.5rem;
+  height: 2px;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--c) 30%, transparent);
+}
+.kicker-meter::after {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 45%;
+  background: linear-gradient(90deg, transparent, var(--c) 70%, #fff);
+  box-shadow: 0 0 8px var(--c), 0 0 16px var(--c);
+  animation: meter-run 2s cubic-bezier(0.45, 0, 0.25, 1) var(--delay, 0s) infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .kicker-meter::after { animation: none; transform: translateX(120%); }
+}
+
+/* En celular las líneas punteadas se quedan quietas (menos distracción y menos batería) */
+@media (max-width: 767px) {
+  .dash-line,
+  .flow-dash { animation: none; }
+}
+
+/* Scanlines de las cards de ruta (mismo efecto que las cyber-cards): van debajo del
+   texto (z-index -1 dentro del panel aislado) y se recorren con una banda de luz al hover */
+.route-panel {
+  --scan-line: color-mix(in srgb, var(--glow) 11%, transparent);
+  --scan-glow: color-mix(in srgb, var(--glow) 18%, transparent);
+}
+.route-panel::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, transparent 0%, var(--scan-glow) 50%, transparent 100%) 0 -100% / 100% 35% no-repeat,
+    repeating-linear-gradient(180deg, var(--scan-line) 0 1px, transparent 1px 3px),
+    linear-gradient(90deg, rgba(255, 0, 0, 0.04), rgba(0, 255, 0, 0.015), rgba(0, 0, 255, 0.04)) 0 0 / 3px 100%;
+}
+.route-panel:is(:hover, :focus-within)::after {
+  animation: scan-sweep 3.2s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .route-panel:is(:hover, :focus-within)::after { animation: none; }
 }

@@ -6,31 +6,14 @@ import { easing } from 'maath';
 import { useReducedMotion } from 'framer-motion';
 import * as THREE from 'three';
 import { createRandom } from '@/lib/random';
+import { useCircleTexture } from '@/lib/circleTexture';
+import { HERO_CORE_SHIFT } from '@/components/sceneLayout';
 
 /* Paleta cyberpunk */
 const CORE_COLOR = '#ff4fe8';   // magenta incandescente
 const MID_COLOR = '#8a63ff';    // violeta
 const EDGE_COLOR = '#3c8dff';   // azul eléctrico
-const JET_COLOR = '#7df9ff';    // cian neón
-
-const useCircleTexture = () =>
-    useMemo(() => {
-        const canvas = document.createElement('canvas');
-        canvas.width = 64;
-        canvas.height = 64;
-        const context = canvas.getContext('2d');
-        if (context) {
-            const gradient = context.createRadialGradient(32, 32, 0, 32, 32, 32);
-            gradient.addColorStop(0, 'rgba(255,255,255,1)');
-            gradient.addColorStop(0.4, 'rgba(255,255,255,0.8)');
-            gradient.addColorStop(1, 'rgba(0,0,0,0)');
-            context.fillStyle = gradient;
-            context.fillRect(0, 0, 64, 64);
-        }
-        const tex = new THREE.CanvasTexture(canvas);
-        tex.needsUpdate = true;
-        return tex;
-    }, []);
+const JET_COLOR = '#00d4ff';    // cian neón saturado: con mezcla aditiva no llega a verse blanco
 
 /** Progreso de scroll de toda la página (0 arriba, 1 abajo), compartido sin re-renders. */
 const useScrollProgress = () => {
@@ -114,62 +97,121 @@ const Galaxy = ({ animate }: { animate: boolean }) => {
 };
 
 /** Doble chorro del quasar (arriba y abajo del disco). */
-const JetStream = ({ animate }: { animate: boolean }) => {
-    const count = 2000;
-    const geoms = useRef<(THREE.BufferGeometry | null)[]>([null, null]);
-    const circleTex = useCircleTexture();
-    const height = 10;
-    const radius = 0.3;
+/* ------------------------------------------------------------------
+   Chorros del quasar: niebla brillante (como el halo del agujero negro
+   de /software) en lugar de partículas. Cada chorro son dos cilindros
+   con un shader aditivo: un núcleo fino casi blanco y un velo amplio
+   cian; el ruido fluye hacia afuera y el brillo se apaga al alejarse.
+------------------------------------------------------------------- */
+const jetVertex = /* glsl */ `
+  varying vec2 vUv;
+  varying vec3 vNormal;
+  varying vec3 vView;
+  void main() {
+    vUv = uv;
+    vec4 mv = modelViewMatrix * vec4(position, 1.0);
+    vNormal = normalize(normalMatrix * normal);
+    vView = normalize(-mv.xyz);
+    gl_Position = projectionMatrix * mv;
+  }
+`;
+const jetFragment = /* glsl */ `
+  precision highp float;
+  uniform float uTime;
+  uniform vec3 uColor;
+  uniform float uStrength;
+  uniform float uSharp;
+  uniform float uWhite;
+  uniform float uLen;
+  varying vec2 vUv;
+  varying vec3 vNormal;
+  varying vec3 vView;
+  float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+  float noise(vec2 p) {
+    vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
+    return mix(mix(hash(i), hash(i + vec2(1.0, 0.0)), f.x), mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), f.x), f.y);
+  }
+  float fbm(vec2 p) { float v = 0.0, a = 0.5; for (int i = 0; i < 5; i++) { v += a * noise(p); p *= 2.03; a *= 0.5; } return v; }
+  void main() {
+    // centro del cilindro (de frente a la cámara) brillante; bordes desvanecidos: parece un volumen
+    float facing = abs(dot(normalize(vNormal), normalize(vView)));
+    float body = pow(facing, uSharp);
+    float y = vUv.y;                                  // 0 en el núcleo, 1 en la punta
+    float ang = vUv.x * 6.28318;
+    float flow = fbm(vec2(y * uLen - uTime * 1.6, sin(ang) * 1.1 + cos(ang) * 0.5));
+    float wisps = fbm(vec2(y * uLen * 2.3 - uTime * 3.1, cos(ang) * 2.0));
+    float along = smoothstep(0.0, 0.03, y) * pow(1.0 - smoothstep(0.15, 1.0, y), 1.3);
+    float cloud = smoothstep(0.25, 0.85, flow);
+    float glow = body * along * (0.25 + 1.25 * cloud) * (0.65 + 0.6 * wisps) * uStrength;
+    vec3 col = mix(uColor, vec3(0.92, 1.0, 1.0), uWhite * body * (1.0 - y));
+    gl_FragColor = vec4(col * glow, glow);
+  }
+`;
 
-    const positions = useMemo(() => {
-        const rand = createRandom(2024);
-        const pos = new Float32Array(count * 3);
-        for (let i = 0; i < count; i++) {
-            const i3 = i * 3;
-            pos[i3] = (rand() - 0.5) * radius;
-            pos[i3 + 1] = rand() * height;
-            pos[i3 + 2] = (rand() - 0.5) * radius;
-        }
-        return pos;
-    }, []);
+interface JetLayer {
+    radius: [number, number];   // radio en la base y en la punta
+    strength: number;
+    sharp: number;
+    white: number;
+}
+
+const JET_LAYERS: JetLayer[] = [
+    { radius: [0.06, 0.22], strength: 0.95, sharp: 2.0, white: 0.8 },    // núcleo
+    { radius: [0.32, 1.25], strength: 0.95, sharp: 1.25, white: 0.15 },  // niebla brillante
+    { radius: [0.85, 2.7], strength: 0.42, sharp: 0.85, white: 0.0 },    // halo exterior
+];
+
+const JetStream = ({ animate }: { animate: boolean }) => {
+    const height = 10;
+    const materials = useRef<(THREE.ShaderMaterial | null)[]>([]);
+    const geometries = useMemo(
+        () => JET_LAYERS.map((layer) => {
+            const g = new THREE.CylinderGeometry(layer.radius[1], layer.radius[0], height, 40, 1, true);
+            g.translate(0, height / 2, 0);
+            return g;
+        }),
+        []
+    );
+    const uniforms = useMemo(
+        () => JET_LAYERS.map((layer) => ({
+            uTime: { value: 0 },
+            uColor: { value: new THREE.Color(JET_COLOR) },
+            uStrength: { value: layer.strength },
+            uSharp: { value: layer.sharp },
+            uWhite: { value: layer.white },
+            uLen: { value: 7 },
+        })),
+        []
+    );
 
     useFrame((_, delta) => {
         if (!animate) return;
-        const safeDelta = Math.min(delta, 0.1);
-        // Se modifica el arreglo del buffer de la geometría (no el valor de useMemo, que React trata como inmutable).
-        // Ambos chorros comparten ese arreglo: se actualiza una vez y se sube a la GPU en cada geometría.
-        const first = geoms.current[0]?.getAttribute('position') as THREE.BufferAttribute | undefined;
-        if (!first) return;
-        const array = first.array as Float32Array;
-        for (let i = 0; i < count; i++) {
-            const i3 = i * 3;
-            array[i3 + 1] += safeDelta * 5;
-            if (array[i3 + 1] > height) array[i3 + 1] %= height;
-        }
-        geoms.current.forEach((geometry) => {
-            const attribute = geometry?.getAttribute('position');
-            if (attribute) attribute.needsUpdate = true;
+        const step = Math.min(delta, 0.1);
+        // los dos chorros de cada capa comparten uniforms: basta avanzar los del chorro superior
+        materials.current.slice(0, JET_LAYERS.length).forEach((m) => {
+            if (m) m.uniforms.uTime.value += step;
         });
     });
 
     return (
         <group>
-            {[1, -1].map((side, index) => (
-                <points key={side} scale={[1, side, 1]}>
-                    <bufferGeometry ref={(geometry) => { geoms.current[index] = geometry as THREE.BufferGeometry | null; }}>
-                        <bufferAttribute attach="attributes-position" count={positions.length / 3} args={[positions, 3]} />
-                    </bufferGeometry>
-                    <pointsMaterial
-                        size={0.2}
-                        map={circleTex}
-                        color={JET_COLOR}
-                        transparent
-                        opacity={0.8}
-                        blending={THREE.AdditiveBlending}
-                        depthWrite={false}
-                    />
-                </points>
-            ))}
+            {[1, -1].map((side) =>
+                JET_LAYERS.map((_, i) => (
+                    <mesh key={`${side}-${i}`} geometry={geometries[i]} scale={[1, side, 1]} renderOrder={2}>
+                        <shaderMaterial
+                            ref={(m) => { materials.current[(side > 0 ? 0 : JET_LAYERS.length) + i] = m; }}
+                            vertexShader={jetVertex}
+                            fragmentShader={jetFragment}
+                            uniforms={uniforms[i]}
+                            transparent
+                            depthWrite={false}
+                            blending={THREE.AdditiveBlending}
+                            side={THREE.DoubleSide}
+                            toneMapped={false}
+                        />
+                    </mesh>
+                ))
+            )}
         </group>
     );
 };
@@ -206,13 +248,18 @@ const Core = () => (
  * El viaje espacial: al hacer scroll la cámara se acerca al núcleo del quasar
  * y la galaxia gira, de modo que cada sección se siente como otro tramo del trayecto.
  */
-/** Desplazamiento del quasar en pantalla durante el Hero (fracción del ancho/alto del viewport). */
-export const HERO_CORE_SHIFT = { desktopX: 0.18, mobileY: 0.2 } as const;
-
 const CameraRig = ({ progress, animate }: { progress: RefObject<number>; animate: boolean }) => {
-    const { camera, size } = useThree();
+    const { camera, size, invalidate } = useThree();
     const target = useMemo(() => new THREE.Vector3(), []);
     const offset = useRef<{ x: number; y: number } | null>(null);
+
+    // Sin animación la escena solo se dibuja bajo demanda: el scroll mueve el núcleo, así que redibuja
+    useEffect(() => {
+        if (animate) return;
+        const redraw = () => invalidate();
+        window.addEventListener('scroll', redraw, { passive: true });
+        return () => window.removeEventListener('scroll', redraw);
+    }, [animate, invalidate]);
 
     useFrame((_, delta) => {
         const p = animate ? progress.current : 0;
@@ -238,7 +285,7 @@ const CameraRig = ({ progress, animate }: { progress: RefObject<number>; animate
     return null;
 };
 
-export const ParticlesScene = () => {
+export default function ParticlesScene() {
     const reduceMotion = useReducedMotion();
     const progress = useScrollProgress();
 
@@ -253,6 +300,8 @@ export const ParticlesScene = () => {
                 camera={{ position: [8, 10, 12], fov: 50 }}
                 dpr={[1, 1.5]}
                 gl={{ antialias: false, powerPreference: 'high-performance' }}
+                // Con "reducir movimiento" nada se anima: no hace falta dibujar 60 veces por segundo
+                frameloop={animate ? 'always' : 'demand'}
                 onCreated={() => requestAnimationFrame(() => setReady(true))}
             >
                 <fog attach="fog" args={['#060414', 10, 40]} />
@@ -266,4 +315,4 @@ export const ParticlesScene = () => {
             <div data-loaded={String(ready)} className="scene-fallback skeleton-fade" />
         </div>
     );
-};
+}

@@ -7,15 +7,12 @@ import {
 import { useLanguage } from '@/context/LanguageContext';
 import { CyberCard, CyberButton } from '@/components/ui/Cyber';
 import { EMAIL, GITHUB_URL, LINKEDIN_URL, BOOKING_URL, WHATSAPP } from '@/lib/config';
+import { CONTACT_MAX as MAX, EMAIL_RE, PROJECT_TYPES, isProjectType } from '@/lib/contactRules';
 
-const MAX = { name: 80, email: 120, message: 2000 } as const;
 const COOLDOWN_MS = 30_000;
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 type Status = 'idle' | 'sending' | 'sent' | 'error';
 type FieldErrors = Partial<Record<'name' | 'email' | 'message' | 'consent', boolean>>;
-
-const PROJECT_TYPES = ['software', 'supply', 'both', 'other'] as const;
 
 const ContactLink = ({ href, icon, children }: { href: string; icon: ReactNode; children: ReactNode }) => (
     <a
@@ -29,7 +26,8 @@ const ContactLink = ({ href, icon, children }: { href: string; icon: ReactNode; 
     </a>
 );
 
-export const Contact = () => {
+/** `defaultType` preselecciona el tipo de proyecto según la página (ruta software o supply chain). */
+export const Contact = ({ defaultType = 'software', tone = 'cyan' }: { defaultType?: 'software' | 'supply'; tone?: 'cyan' | 'violet' | 'teal' }) => {
     const { t, lang } = useLanguage();
 
     const [status, setStatus] = useState<Status>('idle');
@@ -98,7 +96,7 @@ export const Contact = () => {
             return;
         }
 
-        const type = PROJECT_TYPES.includes(typeKey as (typeof PROJECT_TYPES)[number]) ? typeKey : 'other';
+        const type = isProjectType(typeKey) ? typeKey : 'other';
 
         setStatus('sending');
         setErrorText('');
@@ -218,7 +216,7 @@ export const Contact = () => {
                 </div>
 
                 {/* Formulario */}
-                <CyberCard accent="cyan" bodyClassName="!p-6 md:!p-8">
+                <CyberCard accent={tone} bodyClassName="!p-6 md:!p-8">
                     <form onSubmit={handleSubmit} noValidate className="block space-y-5">
                         <h3 className="font-display text-2xl font-semibold text-white">{t('contact.form_title')}</h3>
 
@@ -271,7 +269,7 @@ export const Contact = () => {
                             <label htmlFor="project_type" className="mb-2 block font-display text-sm font-medium text-dim">
                                 {t('contact.label_type')}
                             </label>
-                            <select id="project_type" name="project_type" defaultValue="software" className="field">
+                            <select id="project_type" name="project_type" defaultValue={defaultType} className="field">
                                 {PROJECT_TYPES.map((type) => (
                                     <option key={type} value={type}>{t(`contact.type_${type}`)}</option>
                                 ))}
@@ -323,7 +321,7 @@ export const Contact = () => {
                             <CyberButton
                                 type="submit"
                                 variant="solid"
-                                accent={status === 'error' ? 'magenta' : 'cyan'}
+                                accent={status === 'error' ? 'magenta' : tone}
                                 disabled={status === 'sending' || status === 'sent'}
                             >
                                 {buttonLabel}

@@ -15,14 +15,14 @@ interface ServiceItem {
     featured?: boolean;
 }
 
-const SOFTWARE: ServiceItem[] = [
+export const SOFTWARE: ServiceItem[] = [
     { key: 'frontend', icon: <FaDesktop /> },
     { key: 'backend', icon: <FaServer /> },
     { key: 'fullstack', icon: <FaLayerGroup /> },
     { key: 'chatbots', icon: <FaRobot /> },
 ];
 
-const SUPPLY: ServiceItem[] = [
+export const SUPPLY: ServiceItem[] = [
     { key: 'layout', icon: <FaWarehouse />, featured: true },
     { key: 'process', icon: <FaProjectDiagram /> },
     { key: 'wms', icon: <FaBoxes /> },
@@ -31,19 +31,24 @@ const SUPPLY: ServiceItem[] = [
     { key: 'data', icon: <FaChartLine /> },
 ];
 
-const TEXT_ACCENT: Record<'cyan' | 'magenta', string> = {
+type TrackAccent = 'cyan' | 'magenta' | 'violet' | 'teal';
+
+const TEXT_ACCENT: Record<TrackAccent, string> = {
     cyan: 'text-cyan-neon',
     magenta: 'text-magenta-neon',
+    violet: 'text-[#b9a3ff]',
+    teal: 'text-[#3ee0cf]',
 };
 
 interface TrackProps {
     id: string;
     group: 'sw' | 'sc';
     items: ServiceItem[];
-    accent: Extract<Accent, 'cyan' | 'magenta'>;
+    accent: Extract<Accent, TrackAccent>;
 }
 
-const Track = ({ id, group, items, accent }: TrackProps) => {
+/** Bloque de servicios de una ruta (se usa en la principal y en cada página de ruta). */
+export const Track = ({ id, group, items, accent }: TrackProps) => {
     const { t, list } = useLanguage();
 
     return (

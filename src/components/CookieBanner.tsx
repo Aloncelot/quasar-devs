@@ -4,6 +4,7 @@ import { useSyncExternalStore } from 'react';
 import { FaTimes } from 'react-icons/fa';
 import { useLanguage } from '@/context/LanguageContext';
 import { CyberCard, CyberButton } from '@/components/ui/Cyber';
+import { SiteLink } from '@/components/ui/SiteLink';
 
 /*
  * Aviso de cookies (LFPDPPP). El sitio solo usa almacenamiento local indispensable
@@ -63,9 +64,9 @@ export const CookieBanner = () => {
                     <CyberButton variant="solid" onClick={close} className="text-sm">
                         {t('cookies.accept')}
                     </CyberButton>
-                    <a href="/aviso-de-privacidad#cookies" className="text-sm text-cyan-neon underline underline-offset-4 hover:text-white">
+                    <SiteLink href="/aviso-de-privacidad#cookies" className="text-sm text-cyan-neon underline underline-offset-4 hover:text-white">
                         {t('cookies.more')}
-                    </a>
+                    </SiteLink>
                 </div>
                 <button
                     type="button"

@@ -5,9 +5,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { FaBars, FaTimes } from 'react-icons/fa';
 import Image from 'next/image';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useLanguage, type Language } from '@/context/LanguageContext';
 import { CyberLink } from '@/components/ui/Cyber';
 import { LogoMark } from '@/components/ui/LogoMark';
+import { SiteLink } from '@/components/ui/SiteLink';
 
 const LanguageToggle = () => {
     const { lang, setLang, t } = useLanguage();
@@ -46,6 +48,9 @@ export const Navbar = () => {
     const [isOpen, setIsOpen] = useState(false);
     const [scrolled, setScrolled] = useState(false);
     const { t } = useLanguage();
+    const pathname = usePathname();
+    // Las páginas con formulario propio mandan a su #contacto; el resto, al de la principal
+    const contactHref = ['/', '/software', '/supply-chain', '/sobre-mi'].includes(pathname) ? '#contacto' : '/#contacto';
 
     useEffect(() => {
         const handleScroll = () => setScrolled(window.scrollY > 40);
@@ -65,11 +70,11 @@ export const Navbar = () => {
     }, [isOpen]);
 
     const navLinks = [
-        { name: t('nav.services'), href: '/#servicios' },
-        { name: t('nav.process'), href: '/#proceso' },
-        { name: t('nav.projects'), href: '/#proyectos' },
-        { name: t('nav.about'), href: '/#sobre-mi' },
-        { name: t('nav.contact'), href: '/#contacto' },
+        { name: t('nav.home'), href: '/' },
+        { name: t('nav.software'), href: '/software' },
+        { name: t('nav.supply'), href: '/supply-chain' },
+        { name: t('nav.about'), href: '/sobre-mi' },
+        { name: t('nav.contact'), href: contactHref },
     ];
 
     return (
@@ -93,16 +98,21 @@ export const Navbar = () => {
 
                 <div className="hidden items-center gap-8 lg:flex">
                     {navLinks.map((link) => (
-                        <a key={link.href} href={link.href} className="nav-link">
+                        <SiteLink
+                            key={link.href}
+                            href={link.href}
+                            className="nav-link"
+                            aria-current={pathname === link.href ? 'page' : undefined}
+                        >
                             {link.name}
-                        </a>
+                        </SiteLink>
                     ))}
                 </div>
 
                 <div className="flex items-center gap-4">
                     <LanguageToggle />
                     <div className="hidden md:block">
-                        <CyberLink href="/#contacto" variant="solid" className="text-sm">
+                        <CyberLink href={contactHref} variant="solid" className="text-sm">
                             {t('nav.cta')}
                         </CyberLink>
                     </div>
@@ -130,17 +140,18 @@ export const Navbar = () => {
                     >
                         <div className="flex flex-col gap-1 px-6 py-6">
                             {navLinks.map((link) => (
-                                <a
+                                <SiteLink
                                     key={link.href}
                                     href={link.href}
                                     onClick={() => setIsOpen(false)}
+                                    aria-current={pathname === link.href ? 'page' : undefined}
                                     className="border-l-2 border-transparent px-4 py-3 font-display text-lg text-dim transition-colors hover:border-cyan-neon hover:bg-cyan-neon/5 hover:text-white"
                                 >
                                     {link.name}
-                                </a>
+                                </SiteLink>
                             ))}
                             <div className="mt-4 md:hidden">
-                                <CyberLink href="/#contacto" variant="solid" className="w-full">
+                                <CyberLink href={contactHref} variant="solid" className="w-full">
                                     {t('nav.cta')}
                                 </CyberLink>
                             </div>
